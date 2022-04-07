@@ -1,7 +1,7 @@
 use crate::board::{rowcol2index, Move, Piece, Player, GameResult, COLS, ROWS, SIZE};
 
 #[allow(non_camel_case_types)]
-type u256 = [u128; 2];
+type u256 = [u64; 4];
 
 type ColorBoard = u256;
 pub type BitBoard = [ColorBoard; 2];
@@ -32,7 +32,7 @@ pub struct BitPosition {
 
 impl BitPosition {
     pub fn new() -> BitPosition {
-        let board = [[0, 0], [0, 0]];
+        let board = [[0, 0, 0, 0], [0, 0, 0, 0]];
         let to_play = PL_BLACK;
         let move_count = 0;
 
@@ -46,8 +46,8 @@ impl BitPosition {
     pub fn duplicate(self: &Self) -> BitPosition {
         let brd = self.board;
         let board = [
-            [brd[PL_BLACK][0], brd[PL_BLACK][1]],
-            [brd[PL_WHITE][0], brd[PL_WHITE][1]],
+            [brd[PL_BLACK][0], brd[PL_BLACK][1], brd[PL_BLACK][2], brd[PL_BLACK][3]],
+            [brd[PL_WHITE][0], brd[PL_WHITE][1], brd[PL_WHITE][2], brd[PL_WHITE][3]],
         ];
         let to_play = self.to_play;
         let move_count = self.move_count;
@@ -60,8 +60,8 @@ impl BitPosition {
     }
 
     pub fn get_piece_at(self: &Self, field: usize) -> Piece {
-        let page = field / 128;
-        let index = field % 128;
+        let page = field / 64;
+        let index = field % 64;
         if self.board[PL_BLACK][page] & 1 << index != 0 {
             Piece::Black
         } else if self.board[PL_WHITE][page] & 1 << index != 0 {
@@ -106,8 +106,8 @@ impl BitPosition {
     pub fn make_move(self: &mut Self, mv: Move) {
         let player = self.to_play;
 
-        let page = mv / 128;
-        let index = mv % 128;
+        let page = mv / 64;
+        let index = mv % 64;
         self.board[player][page] |= 1 << index;
 
         self.to_play = other_player(player);
@@ -117,8 +117,8 @@ impl BitPosition {
     pub fn unmake_move(self: &mut Self, mv: Move) {
         let player = other_player(self.to_play);
 
-        let page = mv / 128;
-        let index = mv % 128;
+        let page = mv / 64;
+        let index = mv % 64;
         self.board[player][page] &= !(1 << index);
 
         self.to_play = player;
@@ -135,16 +135,12 @@ impl BitPosition {
         let board1 = self.board[player];
         let board2 = self.board[opp];
 
-        let empty_fields: ColorBoard = [!(board1[0] | board2[0]), !(board1[1] | board2[1])];
+        let empty_fields: ColorBoard = [!(board1[0] | board2[0]), !(board1[1] | board2[1]), !(board1[2] | board2[2]), !(board1[3] | board2[3])];
 
-        for i in 0..128 {
-            if 1 << i & empty_fields[0] != 0 {
-                result.push(i);
-            }
-        }
-
-        for i in 128..SIZE {
-            if 1 << (i - 128) & empty_fields[1] != 0 {
+        for i in 0..SIZE {
+            let page = i / 64;
+            let index = i % 64;
+            if 1 << index & empty_fields[page] != 0 {
                 result.push(i);
             }
         }
@@ -183,11 +179,11 @@ impl BitPosition {
 }
 
 fn line(points: [usize; 5]) -> ColorBoard {
-    let mut result: ColorBoard = [0; 2];
+    let mut result: ColorBoard = [0; 4];
 
     for index in points {
-        let page = index / 128;
-        let index = index % 128;
+        let page = index / 64;
+        let index = index % 64;
         result[page] |= 1 << index;
     }
 
@@ -254,7 +250,7 @@ pub fn is_win(player_board: ColorBoard) -> bool {
         debug_assert!(!WIN_PATTERNS.is_empty());
 
         for win in &WIN_PATTERNS {
-            if (win[0] & player_board[0] == win[0]) && (win[1] & player_board[1] == win[1]) {
+            if (win[0] & player_board[0] == win[0]) && (win[1] & player_board[1] == win[1])  && (win[2] & player_board[2] == win[2]) && (win[3] & player_board[3] == win[3]) {
                 return true;
             }
         }

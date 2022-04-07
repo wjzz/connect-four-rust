@@ -10,7 +10,7 @@ We can do around 10k rollouts per second
 ## Bitboard benchmark
 
 wjzz:~/prog/projects/games/gomoku/five-in-a-rust$ cargo run --release -q -- --rollout 5000
-performed 5000 rollouts [elapsed: 0.911s] [speed: 5K rps]
+performed 5000 rollouts [elapsed: 0.657s] [speed: 7K rps]
 
 ## Time comparison: no randomization
 
