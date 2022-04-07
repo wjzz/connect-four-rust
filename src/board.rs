@@ -94,7 +94,7 @@ fn is_win(board: Board, player: Player) -> bool {
                     }
                 }
                 // rising diagonal
-                if row + 4 < ROWS && col > 4 {
+                if row + 4 < ROWS && col >= 4 {
                     let d = 14;
                     if pp == board[base + d]
                         && pp == board[base + 2 * d]

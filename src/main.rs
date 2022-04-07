@@ -2,6 +2,7 @@
 #![allow(unused_variables)]
 
 mod bestmove;
+mod bitboard;
 mod board;
 mod perft;
 mod play;
@@ -10,7 +11,6 @@ mod tournament;
 mod util;
 
 use util::*;
-
 
 const USAGE: &'static str = "\n
 --perft N   <N = max depth>
@@ -51,7 +51,9 @@ fn main() {
             tournament::compare_ais(tries);
         }
         _ => {
-            show_usage_and_exit();
+            println!("Initializing bitboards");
+            bitboard::initialize_winning_patterns();
+            // show_usage_and_exit();
         }
     }
 }

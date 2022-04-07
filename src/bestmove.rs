@@ -280,7 +280,7 @@ impl Position {
                     } else {
                         return 10000.0;
                     }
-                },
+                }
                 GameResult::Draw => {
                     return 0.0;
                 }
@@ -295,7 +295,7 @@ impl Position {
         let moves = self.moves();
         for mv in moves {
             self.make_move(mv);
-            let evaluation = -1.0 * self.evaluate_minmax(depth-1);
+            let evaluation = -1.0 * self.evaluate_minmax(depth - 1);
             if evaluation > best {
                 best = evaluation;
             }
@@ -311,7 +311,7 @@ impl Position {
 
         // let open_fours = has_open_fours(board, current_player) - has_open_fours(board, opponent);
         // let open_threes =
-            // open_threes_count(board, current_player) - open_threes_count(board, opponent);
+        // open_threes_count(board, current_player) - open_threes_count(board, opponent);
         let open_twos = open_twos_count(board, current_player) - open_twos_count(board, opponent);
         let centralization_score = average_centralization(board, current_player, self.move_count);
 
@@ -326,7 +326,7 @@ pub enum AI {
     Random,
     Mater,
     MinMax(usize),
-    Rollout(usize)
+    Rollout(usize),
 }
 
 impl AI {

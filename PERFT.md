@@ -11,3 +11,8 @@ nodes after 4 moves = 2,495,102,400 [elapsed:  21.7s] [speed: 115M nps]
 
 - [ ] Search in parallel
 - [ ] Use transposition tables
+
+## Bitboard benchmarks
+
+nodes after 3 moves =    11,239,200 [elapsed: 0.146s] [speed: 76M nps]
+nodes after 4 moves = 2,495,102,400 [elapsed:  32.7s] [speed: 76M nps]

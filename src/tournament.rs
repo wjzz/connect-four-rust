@@ -79,7 +79,7 @@ fn tournament(ais: Vec<AI>, tries: usize) {
 
     println!("\nFinal standings");
     for (j, &(score, i)) in v.iter().enumerate() {
-        println!("{}. {} [{} points]", j+1, ais[i].show(), score);
+        println!("{}. {} [{} points]", j + 1, ais[i].show(), score);
     }
 }
 

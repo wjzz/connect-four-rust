@@ -3,9 +3,10 @@ use std::time::Instant;
 use thousands::Separable;
 
 use crate::board::*;
+use crate::bitboard::BitPosition;
 
 fn rollout_game(rng: &mut ThreadRng) -> GameResult {
-    let mut pos = Position::new();
+    let mut pos = BitPosition::new();
 
     loop {
         if let Some(result) = pos.is_finished() {
@@ -58,7 +59,7 @@ pub fn get_black_win_ratio(pos: &Position, mv: Move, rng: &mut ThreadRng, tries:
     for _i in 0..tries {
         match simulate_game_with_move(pos, mv, rng) {
             GameResult::Win(Player::Black) => black += 1,
-            _ => {},
+            _ => {}
         }
     }
     (black as f64) / (tries as f64)
