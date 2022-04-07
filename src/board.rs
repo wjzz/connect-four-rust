@@ -178,6 +178,16 @@ impl Position {
         s
     }
 
+    pub fn move_count(self: &Self) -> usize {
+        let mut result = 0;
+        for i in 0..SIZE {
+            if self.board[i] == Piece::Empty {
+                result += 1;
+            }
+        }
+        result
+    }
+
     pub fn moves(self: &Self) -> Vec<Move> {
         let mut legal_moves = vec![];
 
@@ -218,13 +228,12 @@ impl Position {
     }
 
     pub fn perft(self: &mut Self, depth: usize) -> usize {
-        if depth == 0 {
-            return 1;
-        }
-
         let mut result = 0;
 
-        if depth > 0 && self.is_finished().is_none() {
+        if self.is_finished().is_none() {
+            if depth == 1 {
+                return self.move_count();
+            }
             let moves = self.moves();
             for mv in moves {
                 self.make_move(mv);

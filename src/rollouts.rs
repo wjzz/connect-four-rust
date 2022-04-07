@@ -5,24 +5,28 @@ use thousands::Separable;
 use crate::board::*;
 use crate::bitboard::BitPosition;
 
-fn rollout_game(rng: &mut ThreadRng) -> GameResult {
+fn rollout_game(rng: &mut ThreadRng, v: &mut Vec<Move>) -> GameResult {
     let mut pos = BitPosition::new();
 
     loop {
         if let Some(result) = pos.is_finished() {
             return result;
         }
-        let moves = pos.moves();
-        pos.make_move(*moves.choose(rng).unwrap());
+        // let moves = pos.moves();
+        // pos.make_move(*moves.choose(rng).unwrap());
+        let move_count = pos.moves_mut(v);
+        let move_index = rng.gen_range(0..move_count);
+        pos.make_move(v[move_index]);
     }
 }
 
 pub fn benchmark_rollouts(retries: usize) {
+    let mut v = vec![0; SIZE];
     let mut rng = thread_rng();
     let now = Instant::now();
 
     for _ in 0..retries {
-        let _ = rollout_game(&mut rng);
+        let _ = rollout_game(&mut rng, &mut v);
     }
 
     let mut elapsed_millisecs = now.elapsed().as_millis() as usize;

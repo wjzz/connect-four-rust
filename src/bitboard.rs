@@ -128,6 +128,7 @@ impl BitPosition {
     // TODO: we could store the move list as a single color board
     pub fn moves(self: &Self) -> Vec<Move> {
         let mut result = vec![];
+        result.reserve(250);
 
         let player = self.to_play;
         let opp = other_player(player);
@@ -148,6 +149,43 @@ impl BitPosition {
         result
     }
 
+    pub fn moves_mut(self: &Self, v: &mut Vec<Move>) -> usize {
+        let mut count = 0;
+
+        let player = self.to_play;
+        let opp = other_player(player);
+
+        let board1 = self.board[player];
+        let board2 = self.board[opp];
+
+        let empty_fields: ColorBoard = [!(board1[0] | board2[0]), !(board1[1] | board2[1]), !(board1[2] | board2[2]), !(board1[3] | board2[3])];
+
+        for i in 0..SIZE {
+            let page = i / 64;
+            let index = i % 64;
+            if 1 << index & empty_fields[page] != 0 {
+                v[count] = i;
+                count += 1;
+            }
+        }
+
+        count
+    }
+
+    pub fn move_count(self: &Self) -> usize {
+        let player = self.to_play;
+        let opp = other_player(player);
+
+        let board1 = self.board[player];
+        let board2 = self.board[opp];
+
+        let empty_fields: ColorBoard = [!(board1[0] | board2[0]), !(board1[1] | board2[1]), !(board1[2] | board2[2]), !(board1[3] | board2[3])];
+
+        let mut result = empty_fields[0].count_ones() + empty_fields[1].count_ones() + empty_fields[2].count_ones() + empty_fields[3].count_ones();
+        result -= 31;
+        return result as usize;
+    }
+
     pub fn is_finished(self: &Self) -> Option<GameResult> {
         let opp = other_player(self.to_play);
         if is_win(self.board[opp]) {
@@ -160,21 +198,23 @@ impl BitPosition {
     }
 
     pub fn perft(self: &mut Self, depth: usize) -> usize {
-        if depth == 0 {
-            return 1;
-        }
 
-        let mut result = 0;
-
-        if depth > 0 && self.is_finished().is_none() {
-            let moves = self.moves();
-            for mv in moves {
-                self.make_move(mv);
-                result += self.perft(depth - 1);
-                self.unmake_move(mv);
+        if self.is_finished().is_none() {
+            if depth == 1 {
+                return self.move_count();
+            } else {
+                let moves = self.moves();
+                let mut result = 0;
+                for mv in moves {
+                    self.make_move(mv);
+                    result += self.perft(depth - 1);
+                    self.unmake_move(mv);
+                }
+                return result;
             }
+        } else {
+            return 0;
         }
-        result
     }
 }
 
