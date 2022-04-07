@@ -1,13 +1,15 @@
 ## PERFT
 
-0 -> 1
-1 -> 225
-2 -> 50400
-3 -> 11239200
-4 -> 2495102400
+```sh
+$ cargo run --release -q -- --perft 4
+```
 
-### no win check
-real	0m20,549s
+## ROLLOUTS
 
-### with win check
-real	0m22,309s
+```sh
+cargo run --release -q -- --rollout 5000
+```
+
+## BENCHMARKS
+
+Perf speed: 115M nps

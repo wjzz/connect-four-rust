@@ -1,65 +1,16 @@
+#![allow(dead_code)]
+#![allow(unused_variables)]
+
+mod bestmove;
 mod board;
+mod perft;
+mod play;
+mod rollouts;
+mod util;
 
-use rand::prelude::*;
+use bestmove::*;
 use board::*;
-
-fn simulate_game(mv: Move, rng: &mut ThreadRng) -> GameResult {
-    let mut pos = Position::new();
-    pos.make_move(mv);
-
-    loop {
-        if let Some(result) = pos.is_finished() {
-            return result;
-        }
-        let moves = pos.moves();
-
-        pos.make_move(*moves.choose(rng).unwrap());
-    }
-}
-
-fn get_win_percentage(mv: Move, rng: &mut ThreadRng, tries: usize) -> f64 {
-    let mut draws = 0;
-    let mut black = 0;
-    let mut white = 0;
-
-    for _i in 0..tries {
-        match simulate_game(mv, rng) {
-            GameResult::Draw => draws += 1,
-            GameResult::Win(Player::Black) => black += 1,
-            GameResult::Win(Player::White) => white += 1,
-        }
-    }
-    100.0 * (black as f64) / (tries as f64)
-}
-
-fn find_best_move() {
-    let mut rng = thread_rng();
-    let mut win_ratios = vec![];
-
-    for mv in 0..SIZE {
-        let percentage = get_win_percentage(mv, &mut rng, 1000);
-        win_ratios.push(percentage as usize);
-    }
-
-    for row in 0..ROWS {
-        for col in 0..COLS {
-            print!("{} ", win_ratios[rowcol2index(row, col)]);
-        }
-        println!();
-    }
-}
-
-fn perft() {
-    for i in 0 .. 5 {
-        let mut pos = Position::new();
-        let result = pos.perft(i);
-        println!("{} -> {}", i, result);
-    }
-}
-
-fn rand() -> f64 {
-    rand::random::<f64>()
-}
+use util::*;
 
 fn generate_weights_population(size: usize) -> Vec<AI> {
     let mut results = vec![];
@@ -120,53 +71,41 @@ fn tournament(ais: Vec<AI>) {
     }
 }
 
-fn get_move(pos: &Position, ai: &AI) -> Move {
-    if pos.to_play == Player::Black {
-        loop {
-            println!("Play a move (eg. A5)> ");
-            let mut buffer = String::new();
-            let stdin = std::io::stdin();
-            stdin.read_line(&mut buffer).unwrap();
-            if let Some(mv) = parse_move(buffer) {
-                return mv;
-            }
-        }
-    } else {
-        bestmove(ai, pos)
-    }
-}
+const USAGE: &'static str = "\n
+--perft N   <N = max depth>
+";
 
-fn play() {
-    println!("You play as black");
-
-    let mut pos = Position::new();
-
-    loop {
-        println!("{}", pos.ascii());
-        if let Some(result) = pos.is_finished() {
-            let msg = match result {
-                GameResult::Draw => "draw",
-                GameResult::Win(Player::Black) => "black wins",
-                GameResult::Win(Player::White) => "white wins",
-            };
-            println!("Game is finished! Result: {}", msg);
-            break;
-        }
-        let ai = AI::Mater;
-        let mv = get_move(&pos, &ai);
-        // TODO: print move
-        pos.make_move(mv);
-    }
+fn show_usage_and_exit() {
+    println!("Usage: {}", USAGE);
+    std::process::exit(1);
 }
 
 fn main() {
     // find_best_move();
-    // perft();
     // let result = play_game(AI::Eval, AI::Eval);
     // println!("Result = {:?}", result);
 
     // let ais = generate_weights_population(10);
     // tournament(ais);
 
-    play();
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    if args.is_empty() {
+        show_usage_and_exit();
+    }
+
+    match &args[0][..] {
+        "--perft" => {
+            let depth = parse_string(args.get(1), 3);
+            perft::perft(depth);
+        },
+        "--rollout" => {
+            let retries = parse_string(args.get(1), 1000);
+            rollouts::benchmark_rollouts(retries);
+        },
+        _ => {
+            show_usage_and_exit();
+        }
+    }
+
+    // play::play();
 }
