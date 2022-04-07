@@ -15,7 +15,8 @@ pub fn perft(depth: usize) {
     }
     let nodes_per_sec = node_count / elapsed_millisecs / 1000;
 
-    println!("nodes after {} moves = {:} [elapsed: {}] [speed: {}M nps]",
+    println!(
+        "nodes after {} moves = {:} [elapsed: {}] [speed: {}M nps]",
         depth,
         node_count.separate_with_commas(),
         elapsed_millisecs,

@@ -20,7 +20,7 @@ pub fn benchmark_rollouts(retries: usize) {
     let mut rng = thread_rng();
     let now = Instant::now();
 
-    for _ in 0 .. retries {
+    for _ in 0..retries {
         let _ = rollout_game(&mut rng);
     }
 
@@ -30,7 +30,8 @@ pub fn benchmark_rollouts(retries: usize) {
     }
     let rollouts_per_sec = retries / elapsed_millisecs;
 
-    println!("performed {} rollouts [elapsed: {}] [speed: {}K rps]",
+    println!(
+        "performed {} rollouts [elapsed: {}] [speed: {}K rps]",
         retries,
         elapsed_millisecs,
         rollouts_per_sec.separate_with_commas()

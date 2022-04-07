@@ -12,7 +12,7 @@ fn get_move(pos: &Position, ai: &AI) -> Move {
             }
         }
     } else {
-        bestmove(ai, pos)
+        ai.bestmove(pos)
     }
 }
 
@@ -34,7 +34,7 @@ pub fn play() {
             println!("Game is finished! Result: {}", msg);
             break;
         }
-        let ai = AI::Mater;
+        let ai = AI::Eval;
         let mv = get_move(&pos, &ai);
         // TODO: print move
         pos.make_move(mv);

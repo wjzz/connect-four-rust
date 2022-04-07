@@ -55,7 +55,7 @@ pub fn parse_move(s: String) -> Option<Move> {
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum GameResult {
     Draw,
-    Win(Player)
+    Win(Player),
 }
 
 pub fn rowcol2index(row: usize, col: usize) -> usize {
@@ -72,28 +72,48 @@ fn is_win(board: Board, player: Player) -> bool {
                 // row
                 if col + 4 < COLS {
                     let d = 1;
-                    if pp == board[base+d] && pp == board[base+2*d] && pp == board[base+3*d] && pp == board[base+4*d] && pp == board[base+4*d] {
+                    if pp == board[base + d]
+                        && pp == board[base + 2 * d]
+                        && pp == board[base + 3 * d]
+                        && pp == board[base + 4 * d]
+                        && pp == board[base + 4 * d]
+                    {
                         return true;
                     }
                 }
                 // column
                 if row + 4 < ROWS {
                     let d = 15;
-                    if pp == board[base+d] && pp == board[base+2*d] && pp == board[base+3*d] && pp == board[base+4*d] && pp == board[base+4*d] {
+                    if pp == board[base + d]
+                        && pp == board[base + 2 * d]
+                        && pp == board[base + 3 * d]
+                        && pp == board[base + 4 * d]
+                        && pp == board[base + 4 * d]
+                    {
                         return true;
                     }
                 }
                 // rising diagonal
                 if row + 4 < ROWS && col > 4 {
                     let d = 14;
-                    if pp == board[base+d] && pp == board[base+2*d] && pp == board[base+3*d] && pp == board[base+4*d] && pp == board[base+4*d] {
+                    if pp == board[base + d]
+                        && pp == board[base + 2 * d]
+                        && pp == board[base + 3 * d]
+                        && pp == board[base + 4 * d]
+                        && pp == board[base + 4 * d]
+                    {
                         return true;
                     }
                 }
                 // decreasing diagonal
                 if row + 4 < ROWS && col + 4 < COLS {
                     let d = 16;
-                    if pp == board[base+d] && pp == board[base+2*d] && pp == board[base+3*d] && pp == board[base+4*d] && pp == board[base+4*d] {
+                    if pp == board[base + d]
+                        && pp == board[base + 2 * d]
+                        && pp == board[base + 3 * d]
+                        && pp == board[base + 4 * d]
+                        && pp == board[base + 4 * d]
+                    {
                         return true;
                     }
                 }
@@ -108,14 +128,22 @@ impl Position {
         let board = [Piece::Empty; SIZE];
         let to_play = Player::Black;
         let move_count = 0;
-        Position { board, to_play, move_count }
+        Position {
+            board,
+            to_play,
+            move_count,
+        }
     }
 
     pub fn duplicate(self: &Self) -> Position {
         let board = self.board.clone();
         let to_play = self.to_play;
         let move_count = self.move_count;
-        Position { board, to_play, move_count }
+        Position {
+            board,
+            to_play,
+            move_count,
+        }
     }
 
     pub fn ascii(self: &Self) -> String {
@@ -130,12 +158,13 @@ impl Position {
             for col in 0..COLS {
                 let base = rowcol2index(row, col);
                 let ch = match self.board[base] {
-                    Piece::Empty =>
-                    if row == 7 && col == 7 {
-                        ','
-                    } else {
-                        '.'
-                    },
+                    Piece::Empty => {
+                        if row == 7 && col == 7 {
+                            ','
+                        } else {
+                            '.'
+                        }
+                    }
                     Piece::Black => 'x',
                     Piece::White => 'o',
                 };
@@ -199,7 +228,7 @@ impl Position {
             let moves = self.moves();
             for mv in moves {
                 self.make_move(mv);
-                result += self.perft(depth-1);
+                result += self.perft(depth - 1);
                 self.unmake_move(mv);
             }
         }
