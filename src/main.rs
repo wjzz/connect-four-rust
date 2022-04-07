@@ -46,8 +46,12 @@ fn main() {
         "--play" => {
             play::play();
         }
+        "--tournament" => {
+            let tries = parse_string(args.get(1), 10);
+            tournament::compare_ais(tries);
+        }
         _ => {
-            tournament::compare_ais();
+            show_usage_and_exit();
         }
     }
 }

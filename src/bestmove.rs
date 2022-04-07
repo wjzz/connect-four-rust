@@ -1,6 +1,7 @@
 use rand::prelude::*;
 
 use crate::board::*;
+use crate::rollouts;
 
 fn has_open_fours(board: Board, player: Player) -> usize {
     let pp = Piece::from_player(player);
@@ -223,7 +224,7 @@ impl Position {
         self.bestmove_random()
     }
 
-    pub fn bestmove_evaluator(self: &Self) -> Move {
+    pub fn bestmove_minmax(self: &Self, depth: usize) -> Move {
         let moves = self.moves();
 
         let mut current_eval = vec![];
@@ -231,13 +232,8 @@ impl Position {
         let mut best_eval = -100000.0;
         for mv in moves {
             pos.make_move(mv);
-            if let Some(GameResult::Win(player)) = pos.is_finished() {
-                if player == self.to_play {
-                    return mv;
-                }
-            }
-            let evaluation = pos.evaluate();
-            if evaluation > best_eval || current_eval.is_empty() {
+            let evaluation = pos.evaluate_minmax(depth);
+            if evaluation > best_eval {
                 best_eval = evaluation;
                 current_eval = vec![mv];
             } else if (evaluation - best_eval).abs() < 0.01 {
@@ -250,14 +246,72 @@ impl Position {
         *current_eval.choose(&mut rng).unwrap()
     }
 
+    pub fn bestmove_rollout(self: &Self, tries: usize) -> Move {
+        let mut rng = thread_rng();
+        let moves = self.moves();
+
+        let mut current_eval = vec![];
+        let mut best_eval = -10.0;
+        for mv in moves {
+            let mut evaluation = rollouts::get_black_win_ratio(&self, mv, &mut rng, tries);
+            if self.to_play == Player::White {
+                evaluation = 1.0 - evaluation;
+            }
+
+            // println!("eval = {}", evaluation);
+            if evaluation > best_eval {
+                best_eval = evaluation;
+                current_eval = vec![mv];
+            } else if (evaluation - best_eval).abs() < 0.03 {
+                current_eval.push(mv);
+            }
+        }
+
+        let mut rng = thread_rng();
+        *current_eval.choose(&mut rng).unwrap()
+    }
+
+    pub fn evaluate_minmax(self: &mut Self, depth: usize) -> f64 {
+        if let Some(result) = self.is_finished() {
+            match result {
+                GameResult::Win(player) => {
+                    if player == self.to_play {
+                        return -10000.0;
+                    } else {
+                        return 10000.0;
+                    }
+                },
+                GameResult::Draw => {
+                    return 0.0;
+                }
+            }
+        }
+
+        if depth == 0 {
+            return self.evaluate();
+        }
+
+        let mut best = -100000.0;
+        let moves = self.moves();
+        for mv in moves {
+            self.make_move(mv);
+            let evaluation = -1.0 * self.evaluate_minmax(depth-1);
+            if evaluation > best {
+                best = evaluation;
+            }
+            self.unmake_move(mv);
+        }
+        best
+    }
+
     pub fn evaluate(self: &Self) -> f64 {
         let board = self.board;
         let opponent = self.to_play;
         let current_player = opponent.other();
 
-        let open_fours = has_open_fours(board, current_player) - has_open_fours(board, opponent);
-        let open_threes =
-            open_threes_count(board, current_player) - open_threes_count(board, opponent);
+        // let open_fours = has_open_fours(board, current_player) - has_open_fours(board, opponent);
+        // let open_threes =
+            // open_threes_count(board, current_player) - open_threes_count(board, opponent);
         let open_twos = open_twos_count(board, current_player) - open_twos_count(board, opponent);
         let centralization_score = average_centralization(board, current_player, self.move_count);
 
@@ -271,25 +325,26 @@ impl Position {
 pub enum AI {
     Random,
     Mater,
-    Eval,
+    MinMax(usize),
+    Rollout(usize)
 }
 
 impl AI {
     pub fn show(self: &Self) -> String {
-        String::from(
-            match self {
-                AI::Random => "random",
-                AI::Mater => "checkmater",
-                AI::Eval => "evaluator",
-            }
-        )
+        match self {
+            AI::Random => "random".to_string(),
+            AI::Mater => "checkmater".to_string(),
+            AI::MinMax(depth) => format!("minmax(depth={})", depth),
+            AI::Rollout(tries) => format!("rollout(tries={})", tries),
+        }
     }
 
     pub fn bestmove(self: &Self, pos: &Position) -> Move {
         match self {
             AI::Random => pos.bestmove_random(),
             AI::Mater => pos.bestmove_mater(),
-            AI::Eval => pos.bestmove_evaluator(),
+            AI::MinMax(depth) => pos.bestmove_minmax(*depth),
+            AI::Rollout(tries) => pos.bestmove_rollout(*tries),
         }
     }
 }

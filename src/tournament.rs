@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use crate::bestmove::*;
 use crate::board::*;
 
@@ -29,7 +31,7 @@ fn result2score(result: GameResult) -> (f64, f64) {
     }
 }
 
-fn tournament(ais: Vec<AI>) {
+fn tournament(ais: Vec<AI>, tries: usize) {
     let mut scores = vec![0.0; ais.len()];
 
     for (i, first_ai) in ais.iter().enumerate() {
@@ -37,7 +39,7 @@ fn tournament(ais: Vec<AI>) {
             if i < j {
                 let first_before = scores[i];
                 let second_before = scores[j];
-                let tries = 100;
+                let now = Instant::now();
                 for k in 0..tries {
                     if k % 2 == 0 {
                         let result = play_game(first_ai, second_ai);
@@ -51,12 +53,15 @@ fn tournament(ais: Vec<AI>) {
                         scores[j] += score2;
                     }
                 }
+                let elapsed_millisecs = now.elapsed().as_millis() as usize;
+
                 println!(
-                    "{:2} vs {:2}: {:2} - {:2}",
+                    "{:2} vs {:2}: {:2} - {:2} [average time per game: {}s]",
                     ais[i].show(),
                     ais[j].show(),
                     scores[i] - first_before,
-                    scores[j] - second_before
+                    scores[j] - second_before,
+                    elapsed_millisecs / tries
                 );
             }
         }
@@ -78,11 +83,15 @@ fn tournament(ais: Vec<AI>) {
     }
 }
 
-pub fn compare_ais() {
+pub fn compare_ais(tries: usize) {
     let ais = vec![
         AI::Random,
         AI::Mater,
-        AI::Eval,
+        AI::MinMax(0),
+        // AI::MinMax(1),
+        // AI::MinMax(2),
+        AI::Rollout(10),
+        AI::Rollout(100),
     ];
-    tournament(ais);
+    tournament(ais, tries);
 }

@@ -34,7 +34,7 @@ pub fn play() {
             println!("Game is finished! Result: {}", msg);
             break;
         }
-        let ai = AI::Eval;
+        let ai = AI::MinMax(0);
         let mv = get_move(&pos, &ai);
         // TODO: print move
         pos.make_move(mv);
