@@ -1,13 +1,12 @@
 use std::time::Instant;
 use thousands::Separable;
 
-// use crate::board::Position;
-use crate::bitboard::BitPosition;
+use crate::types::*;
 
-pub fn perft(depth: usize) {
+pub fn perft<P: Position>(depth: usize) {
     let now = Instant::now();
 
-    let mut pos = BitPosition::new();
+    let mut pos = P::new();
     let node_count = pos.perft(depth);
 
     let mut elapsed_millisecs = now.elapsed().as_millis() as usize;

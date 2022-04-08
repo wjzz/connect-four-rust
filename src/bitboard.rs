@@ -1,9 +1,6 @@
-use crate::board::{rowcol2index, Move, Piece, Player, GameResult, COLS, ROWS, SIZE};
+use crate::types::*;
 
-#[allow(non_camel_case_types)]
-type u256 = [u64; 4];
-
-type ColorBoard = u256;
+type ColorBoard = [u64; 4];
 pub type BitBoard = [ColorBoard; 2];
 
 type BitPlayer = usize;
@@ -30,8 +27,8 @@ pub struct BitPosition {
     pub move_count: usize,
 }
 
-impl BitPosition {
-    pub fn new() -> BitPosition {
+impl Position for BitPosition {
+    fn new() -> BitPosition {
         let board = [[0, 0, 0, 0], [0, 0, 0, 0]];
         let to_play = PL_BLACK;
         let move_count = 0;
@@ -43,7 +40,11 @@ impl BitPosition {
         }
     }
 
-    pub fn duplicate(self: &Self) -> BitPosition {
+    fn current_player(self: &Self) -> Player {
+        to_player(self.to_play)
+    }
+
+    fn duplicate(self: &Self) -> BitPosition {
         let brd = self.board;
         let board = [
             [brd[PL_BLACK][0], brd[PL_BLACK][1], brd[PL_BLACK][2], brd[PL_BLACK][3]],
@@ -59,19 +60,7 @@ impl BitPosition {
         }
     }
 
-    pub fn get_piece_at(self: &Self, field: usize) -> Piece {
-        let page = field / 64;
-        let index = field % 64;
-        if self.board[PL_BLACK][page] & 1 << index != 0 {
-            Piece::Black
-        } else if self.board[PL_WHITE][page] & 1 << index != 0 {
-            Piece::White
-        } else {
-            Piece::Empty
-        }
-    }
-
-    pub fn ascii(self: &Self) -> String {
+    fn ascii(self: &Self) -> String {
         let mut s = String::new();
 
         let header = "   A B C D E F G H I J K L M N O\n";
@@ -103,7 +92,7 @@ impl BitPosition {
         s
     }
 
-    pub fn make_move(self: &mut Self, mv: Move) {
+    fn make_move(self: &mut Self, mv: Move) {
         let player = self.to_play;
 
         let page = mv / 64;
@@ -114,7 +103,7 @@ impl BitPosition {
         self.move_count += 1;
     }
 
-    pub fn unmake_move(self: &mut Self, mv: Move) {
+    fn unmake_move(self: &mut Self, mv: Move) {
         let player = other_player(self.to_play);
 
         let page = mv / 64;
@@ -126,7 +115,7 @@ impl BitPosition {
     }
 
     // TODO: we could store the move list as a single color board
-    pub fn moves(self: &Self) -> Vec<Move> {
+    fn moves(self: &Self) -> Vec<Move> {
         let mut result = vec![];
         result.reserve(250);
 
@@ -147,6 +136,45 @@ impl BitPosition {
         }
 
         result
+    }
+
+    fn is_finished(self: &Self) -> Option<GameResult> {
+        let opp = other_player(self.to_play);
+        if is_win(self.board[opp]) {
+            Some(GameResult::Win(to_player(opp)))
+        } else if self.move_count == SIZE {
+            Some(GameResult::Draw)
+        } else {
+            None
+        }
+    }
+
+    fn move_count(self: &Self) -> usize {
+        let player = self.to_play;
+        let opp = other_player(player);
+
+        let board1 = self.board[player];
+        let board2 = self.board[opp];
+
+        let empty_fields: ColorBoard = [!(board1[0] | board2[0]), !(board1[1] | board2[1]), !(board1[2] | board2[2]), !(board1[3] | board2[3])];
+
+        let mut result = empty_fields[0].count_ones() + empty_fields[1].count_ones() + empty_fields[2].count_ones() + empty_fields[3].count_ones();
+        result -= 31;
+        return result as usize;
+    }
+}
+
+impl BitPosition {
+    fn get_piece_at(self: &Self, field: usize) -> Piece {
+        let page = field / 64;
+        let index = field % 64;
+        if self.board[PL_BLACK][page] & 1 << index != 0 {
+            Piece::Black
+        } else if self.board[PL_WHITE][page] & 1 << index != 0 {
+            Piece::White
+        } else {
+            Piece::Empty
+        }
     }
 
     pub fn moves_mut(self: &Self, v: &mut Vec<Move>) -> usize {
@@ -170,51 +198,6 @@ impl BitPosition {
         }
 
         count
-    }
-
-    pub fn move_count(self: &Self) -> usize {
-        let player = self.to_play;
-        let opp = other_player(player);
-
-        let board1 = self.board[player];
-        let board2 = self.board[opp];
-
-        let empty_fields: ColorBoard = [!(board1[0] | board2[0]), !(board1[1] | board2[1]), !(board1[2] | board2[2]), !(board1[3] | board2[3])];
-
-        let mut result = empty_fields[0].count_ones() + empty_fields[1].count_ones() + empty_fields[2].count_ones() + empty_fields[3].count_ones();
-        result -= 31;
-        return result as usize;
-    }
-
-    pub fn is_finished(self: &Self) -> Option<GameResult> {
-        let opp = other_player(self.to_play);
-        if is_win(self.board[opp]) {
-            Some(GameResult::Win(to_player(opp)))
-        } else if self.move_count == SIZE {
-            Some(GameResult::Draw)
-        } else {
-            None
-        }
-    }
-
-    pub fn perft(self: &mut Self, depth: usize) -> usize {
-
-        if self.is_finished().is_none() {
-            if depth == 1 {
-                return self.move_count();
-            } else {
-                let moves = self.moves();
-                let mut result = 0;
-                for mv in moves {
-                    self.make_move(mv);
-                    result += self.perft(depth - 1);
-                    self.unmake_move(mv);
-                }
-                return result;
-            }
-        } else {
-            return 0;
-        }
     }
 }
 

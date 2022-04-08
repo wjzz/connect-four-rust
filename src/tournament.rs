@@ -1,7 +1,7 @@
 use std::time::Instant;
 
 use crate::bestmove::*;
-use crate::board::*;
+use crate::types::*;
 
 // fn generate_weights_population(size: usize) -> Vec<AI> {
 //     let mut results = vec![];

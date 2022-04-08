@@ -2,7 +2,7 @@ use rand::prelude::*;
 use std::time::Instant;
 use thousands::Separable;
 
-use crate::board::*;
+use crate::types::*;
 use crate::bitboard::BitPosition;
 
 fn rollout_game(rng: &mut ThreadRng, v: &mut Vec<Move>) -> GameResult {
@@ -43,8 +43,8 @@ pub fn benchmark_rollouts(retries: usize) {
     );
 }
 
-fn has_a_winning_move(pos: &mut Position, moves: &Vec<Move>) -> Option<GameResult> {
-    let opp = pos.to_play;
+fn has_a_winning_move<P: Position>(pos: &mut P, moves: &Vec<Move>) -> Option<GameResult> {
+    let opp = pos.current_player();
     for &mv in moves {
         pos.make_move(mv);
         let result = pos.is_finished();
@@ -58,7 +58,7 @@ fn has_a_winning_move(pos: &mut Position, moves: &Vec<Move>) -> Option<GameResul
     None
 }
 
-fn simulate_game_with_move(pos: &Position, mv: Move, rng: &mut ThreadRng) -> GameResult {
+fn simulate_game_with_move<P: Position>(pos: &P, mv: Move, rng: &mut ThreadRng) -> GameResult {
     let mut pos = pos.duplicate();
     pos.make_move(mv);
 
@@ -77,7 +77,7 @@ fn simulate_game_with_move(pos: &Position, mv: Move, rng: &mut ThreadRng) -> Gam
     }
 }
 
-pub fn get_black_win_count(pos: &Position, mv: Move, rng: &mut ThreadRng, tries: usize) -> i32 {
+pub fn get_black_win_count<P: Position>(pos: &P, mv: Move, rng: &mut ThreadRng, tries: usize) -> i32 {
     let mut black = 0;
 
     for _i in 0..tries {
@@ -87,4 +87,11 @@ pub fn get_black_win_count(pos: &Position, mv: Move, rng: &mut ThreadRng, tries:
         }
     }
     black
+}
+
+pub fn rollout_central_move<P: Position>() {
+    let mut rng = thread_rng();
+    let tries = 1000;
+    let black_wins = get_black_win_count(&P::new(), rowcol2index(7, 7), &mut rng, tries);
+    println!("Black won {} out of {} games = {}%", black_wins, tries, 100 * (black_wins as usize) / tries);
 }

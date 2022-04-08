@@ -2,9 +2,10 @@ use std::time::Instant;
 
 use crate::bestmove::*;
 use crate::board::*;
+use crate::types::*;
 use crate::util::read_line;
 
-fn get_move(pos: &Position, ai: &AI) -> Move {
+fn get_move(pos: &ArrayPosition, ai: &AI) -> Move {
     if pos.to_play == Player::White {
         loop {
             println!("Play a move (eg. A5)> ");
@@ -30,7 +31,7 @@ fn get_move(pos: &Position, ai: &AI) -> Move {
 pub fn play() {
     println!("You play as white");
 
-    let mut pos = Position::new();
+    let mut pos = ArrayPosition::new();
 
     loop {
         println!("{}", pos.ascii());

@@ -6,11 +6,15 @@ mod bitboard;
 mod board;
 mod perft;
 mod play;
+mod position;
 mod rollouts;
 mod tournament;
+mod types;
 mod util;
 
 use util::*;
+// use board::ArrayPosition;
+use bitboard::BitPosition;
 
 const USAGE: &'static str = "\n
 --perft N   <N = max depth>
@@ -34,10 +38,14 @@ fn main() {
         show_usage_and_exit();
     }
 
+    println!("Initializing bitboards");
+    bitboard::initialize_winning_patterns();
+
     match &args[0][..] {
         "--perft" => {
             let depth = parse_string(args.get(1), 3);
-            perft::perft(depth);
+            // perft::perft::<ArrayPosition>(depth);
+            perft::perft::<BitPosition>(depth);
         }
         "--rollout" => {
             let retries = parse_string(args.get(1), 1000);
@@ -51,8 +59,7 @@ fn main() {
             tournament::compare_ais(tries);
         }
         _ => {
-            println!("Initializing bitboards");
-            bitboard::initialize_winning_patterns();
+            rollouts::rollout_central_move::<BitPosition>();
             // show_usage_and_exit();
         }
     }

@@ -1,6 +1,7 @@
 use rand::prelude::*;
 
-use crate::board::*;
+use crate::types::*;
+use crate::board::{Board, ArrayPosition};
 use crate::rollouts;
 
 fn has_open_fours(board: Board, player: Player) -> usize {
@@ -199,7 +200,7 @@ fn average_centralization(board: Board, player: Player, move_count: usize) -> us
     (2 * result / (move_count as i32)) as usize
 }
 
-impl Position {
+impl ArrayPosition {
     pub fn bestmove_random(self: &Self) -> Move {
         let moves = self.moves();
         let mut rng = thread_rng();
@@ -254,7 +255,7 @@ impl Position {
         let mut current_eval = vec![];
         let mut best_eval = 0;
         for mv in moves {
-            let mut evaluation = rollouts::get_black_win_count(&self, mv, &mut rng, tries);
+            let mut evaluation = rollouts::get_black_win_count(self, mv, &mut rng, tries);
             if self.to_play == Player::White {
                 evaluation = (tries as i32) - evaluation;
             }
@@ -346,7 +347,7 @@ impl AI {
         }
     }
 
-    pub fn bestmove(self: &Self, pos: &Position) -> Move {
+    pub fn bestmove(self: &Self, pos: &ArrayPosition) -> Move {
         match self {
             AI::Random => pos.bestmove_random(),
             AI::Mater => pos.bestmove_mater(),
@@ -357,7 +358,7 @@ impl AI {
 }
 
 pub fn play_game(black_ai: &AI, white_ai: &AI) -> GameResult {
-    let mut pos = Position::new();
+    let mut pos = ArrayPosition::new();
     loop {
         if let Some(result) = pos.is_finished() {
             // println!("{}", pos.ascii());
