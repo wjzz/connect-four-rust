@@ -214,7 +214,7 @@ impl ArrayPosition {
         let mut pos = self.duplicate();
         for mv in moves {
             pos.make_move(mv);
-            if let Some(GameResult::Win(player)) = pos.is_finished() {
+            if let Some(GameResult::Win(player)) = pos.result() {
                 if player == self.to_play {
                     return mv;
                 }
@@ -280,7 +280,7 @@ impl ArrayPosition {
     }
 
     pub fn evaluate_minmax(self: &mut Self, depth: usize) -> f64 {
-        if let Some(result) = self.is_finished() {
+        if let Some(result) = self.result() {
             match result {
                 GameResult::Win(player) => {
                     if player == self.to_play {
@@ -360,7 +360,7 @@ impl AI {
 pub fn play_game(black_ai: &AI, white_ai: &AI) -> GameResult {
     let mut pos = ArrayPosition::new();
     loop {
-        if let Some(result) = pos.is_finished() {
+        if let Some(result) = pos.result() {
             // println!("{}", pos.ascii());
             return result;
         }

@@ -3,31 +3,62 @@ use std::time::Instant;
 use thousands::Separable;
 
 use crate::types::*;
-use crate::bitboard::BitPosition;
+// use crate::bitboard::BitPosition;
+use crate::board::ArrayPosition;
 
 fn rollout_game(rng: &mut ThreadRng, v: &mut Vec<Move>) -> GameResult {
-    let mut pos = BitPosition::new();
+    let mut pos = ArrayPosition::new();
 
     loop {
-        if let Some(result) = pos.is_finished() {
+        if let Some(result) = pos.result() {
             return result;
         }
-        // let moves = pos.moves();
-        // pos.make_move(*moves.choose(rng).unwrap());
-        let move_count = pos.moves_mut(v);
-        let move_index = rng.gen_range(0..move_count);
-        pos.make_move(v[move_index]);
+        let moves = pos.moves();
+        pos.make_move(*moves.choose(rng).unwrap());
+        // let move_count = pos.moves_mut(v);
+        // let move_index = rng.gen_range(0..move_count);
+        // pos.make_move(v[move_index]);
+    }
+}
+
+pub fn rollout_games(retries: usize) {
+    let mut rng = thread_rng();
+    let mut v = vec![0; SIZE];
+
+    for _ in 0..retries {
+        rollout_game(&mut rng, &mut v);
+    }
+}
+
+fn rollout_game_shuffle(moves: &Vec<Move>) {
+    let mut pos = ArrayPosition::new();
+
+    for mv in moves {
+        pos.make_move(*mv);
+        if pos.is_finished() {
+            return;
+        }
+    }
+}
+
+pub fn rollout_games_shuffle(retries: usize) {
+    let mut rng = thread_rng();
+
+    let mut moves = vec![];
+    for i in 0 .. SIZE {
+        moves.push(i);
+    }
+
+    for _ in 0..retries {
+        moves.shuffle(&mut rng);
+        rollout_game_shuffle(&moves);
     }
 }
 
 pub fn benchmark_rollouts(retries: usize) {
-    let mut v = vec![0; SIZE];
-    let mut rng = thread_rng();
     let now = Instant::now();
 
-    for _ in 0..retries {
-        let _ = rollout_game(&mut rng, &mut v);
-    }
+    rollout_games_shuffle(retries);
 
     let mut elapsed_millisecs = now.elapsed().as_millis() as usize;
     if elapsed_millisecs == 0 {
@@ -47,7 +78,7 @@ fn has_a_winning_move<P: Position>(pos: &mut P, moves: &Vec<Move>) -> Option<Gam
     let opp = pos.current_player();
     for &mv in moves {
         pos.make_move(mv);
-        let result = pos.is_finished();
+        let result = pos.result();
         if let Some(GameResult::Win(player)) = result {
             if player == opp {
                 return result;
@@ -63,7 +94,7 @@ fn simulate_game_with_move<P: Position>(pos: &P, mv: Move, rng: &mut ThreadRng) 
     pos.make_move(mv);
 
     loop {
-        if let Some(result) = pos.is_finished() {
+        if let Some(result) = pos.result() {
             return result;
         }
         let moves = pos.moves();

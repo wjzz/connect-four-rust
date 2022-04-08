@@ -13,7 +13,7 @@ mod types;
 mod util;
 
 use util::*;
-// use board::ArrayPosition;
+use board::ArrayPosition;
 use bitboard::BitPosition;
 
 const USAGE: &'static str = "\n
@@ -44,8 +44,8 @@ fn main() {
     match &args[0][..] {
         "--perft" => {
             let depth = parse_string(args.get(1), 3);
-            // perft::perft::<ArrayPosition>(depth);
-            perft::perft::<BitPosition>(depth);
+            perft::perft::<ArrayPosition>(depth);
+            // perft::perft::<BitPosition>(depth);
         }
         "--rollout" => {
             let retries = parse_string(args.get(1), 1000);

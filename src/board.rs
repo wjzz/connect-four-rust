@@ -2,6 +2,8 @@ use crate::types::*;
 
 pub type Board = [Piece; SIZE];
 
+static mut LINES: Vec<Vec<usize>> = vec![];
+
 pub struct ArrayPosition {
     pub board: Board,
     pub to_play: Player,
@@ -96,8 +98,11 @@ impl Position for ArrayPosition {
         self.move_count -= 1;
     }
 
-    fn is_finished(self: &Self) -> Option<GameResult> {
-        if is_win(self.board, self.to_play.other()) {
+    fn result(self: &Self) -> Option<GameResult> {
+        // TODO: use `is_win_smarter` once it's fully implemented
+        if self.move_count < 9 {
+            None
+        } else if is_win(self.board, self.to_play.other()) {
             Some(GameResult::Win(self.to_play.other()))
         } else if self.move_count == SIZE {
             Some(GameResult::Draw)
@@ -176,6 +181,46 @@ fn is_win(board: Board, player: Player) -> bool {
             }
         }
     }
+    false
+}
+
+fn is_win_smarter(board: Board, player: Player) -> bool {
+    let pp = Piece::from_player(player);
+
+    // rows
+    for col in 0 .. COLS {
+        let mut count = 0;
+        for row in 0 .. (ROWS - 4) {
+            let index = rowcol2index(row, col);
+            if board[index] == pp {
+                count += 1;
+                if count == 5 {
+                    return true;
+                }
+            } else {
+                count = 0;
+            }
+        }
+    }
+
+    // cols
+    for row in 0 .. ROWS {
+        let mut count = 0;
+        for col in 0 .. (COLS - 4) {
+            let index = rowcol2index(row, col);
+            if board[index] == pp {
+                count += 1;
+                if count == 5 {
+                    return true;
+                }
+            } else {
+                count = 0;
+            }
+        }
+    }
+
+    // TODO: diagonals
+
     false
 }
 

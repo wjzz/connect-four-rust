@@ -138,7 +138,7 @@ impl Position for BitPosition {
         result
     }
 
-    fn is_finished(self: &Self) -> Option<GameResult> {
+    fn result(self: &Self) -> Option<GameResult> {
         let opp = other_player(self.to_play);
         if is_win(self.board[opp]) {
             Some(GameResult::Win(to_player(opp)))
@@ -265,6 +265,7 @@ pub fn initialize_winning_patterns() {
                 }
             }
         }
+        println!("Found {} winning patterns.", WIN_PATTERNS.len());
     }
 }
 

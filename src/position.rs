@@ -8,11 +8,15 @@ pub trait Position {
     fn moves(self: &Self) -> Vec<Move>;
     fn make_move(self: &mut Self, mv: Move);
     fn unmake_move(self: &mut Self, mv: Move);
-    fn is_finished(self: &Self) -> Option<GameResult>;
+    fn result(self: &Self) -> Option<GameResult>;
     fn move_count(self: &Self) -> usize;
 
+    fn is_finished(self: &Self) -> bool {
+        self.result().is_some()
+    }
+
     fn perft(self: &mut Self, depth: usize) -> usize {
-        if self.is_finished().is_none() {
+        if self.result().is_none() {
             if depth == 1 {
                 return self.move_count();
             } else {

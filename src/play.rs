@@ -35,7 +35,7 @@ pub fn play() {
 
     loop {
         println!("{}", pos.ascii());
-        if let Some(result) = pos.is_finished() {
+        if let Some(result) = pos.result() {
             use GameResult::*;
 
             let msg = match result {
