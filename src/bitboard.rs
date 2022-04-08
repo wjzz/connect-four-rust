@@ -25,9 +25,9 @@ fn to_player(player: BitPlayer) -> Player {
 }
 
 pub struct BitPosition {
-    board: BitBoard,
-    to_play: BitPlayer,
-    move_count: usize,
+    pub board: BitBoard,
+    pub to_play: BitPlayer,
+    pub move_count: usize,
 }
 
 impl BitPosition {

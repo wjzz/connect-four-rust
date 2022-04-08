@@ -249,22 +249,29 @@ impl Position {
     pub fn bestmove_rollout(self: &Self, tries: usize) -> Move {
         let mut rng = thread_rng();
         let moves = self.moves();
+        let mut stats = vec![];
 
         let mut current_eval = vec![];
-        let mut best_eval = -10.0;
+        let mut best_eval = 0;
         for mv in moves {
-            let mut evaluation = rollouts::get_black_win_ratio(&self, mv, &mut rng, tries);
+            let mut evaluation = rollouts::get_black_win_count(&self, mv, &mut rng, tries);
             if self.to_play == Player::White {
-                evaluation = 1.0 - evaluation;
+                evaluation = (tries as i32) - evaluation;
             }
 
-            // println!("eval = {}", evaluation);
+            stats.push((evaluation, mv / ROWS, mv % ROWS));
+
             if evaluation > best_eval {
                 best_eval = evaluation;
                 current_eval = vec![mv];
-            } else if (evaluation - best_eval).abs() < 0.03 {
+            } else if evaluation == best_eval {
                 current_eval.push(mv);
             }
+        }
+        stats.sort();
+        for (i, &(eval, row, col)) in stats.iter().enumerate() {
+            let percentage = 100.0 * (eval as f64) / (tries as f64);
+            println!("{}. eval[{}, {}] = {} ({:.2}%)", i, row, col, eval, percentage);
         }
 
         let mut rng = thread_rng();

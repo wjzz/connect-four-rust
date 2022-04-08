@@ -3,7 +3,7 @@ use crate::board::*;
 use crate::util::read_line;
 
 fn get_move(pos: &Position, ai: &AI) -> Move {
-    if pos.to_play == Player::Black {
+    if pos.to_play == Player::White {
         loop {
             println!("Play a move (eg. A5)> ");
             let line = read_line();
@@ -17,7 +17,7 @@ fn get_move(pos: &Position, ai: &AI) -> Move {
 }
 
 pub fn play() {
-    println!("You play as black");
+    println!("You play as white");
 
     let mut pos = Position::new();
 
@@ -34,7 +34,8 @@ pub fn play() {
             println!("Game is finished! Result: {}", msg);
             break;
         }
-        let ai = AI::MinMax(0);
+        // let ai = AI::MinMax(0);
+        let ai = AI::Rollout(10);
         let mv = get_move(&pos, &ai);
         // TODO: print move
         pos.make_move(mv);

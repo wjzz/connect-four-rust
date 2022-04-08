@@ -43,6 +43,20 @@ pub fn benchmark_rollouts(retries: usize) {
     );
 }
 
+fn has_a_winning_move(pos: &mut Position, moves: &Vec<Move>) -> Option<GameResult> {
+    for &mv in moves {
+        pos.make_move(mv);
+        let result = pos.is_finished();
+        if let Some(GameResult::Win(player)) = result {
+            if player == pos.to_play {
+                return result;
+            }
+        }
+        pos.unmake_move(mv);
+    }
+    None
+}
+
 fn simulate_game_with_move(pos: &Position, mv: Move, rng: &mut ThreadRng) -> GameResult {
     let mut pos = pos.duplicate();
     pos.make_move(mv);
@@ -53,11 +67,16 @@ fn simulate_game_with_move(pos: &Position, mv: Move, rng: &mut ThreadRng) -> Gam
         }
         let moves = pos.moves();
 
+        // Make a heavy rollout, ensuring we always secure a possible win
+        if let Some(result) = has_a_winning_move(&mut pos, &moves) {
+            return result;
+        }
+
         pos.make_move(*moves.choose(rng).unwrap());
     }
 }
 
-pub fn get_black_win_ratio(pos: &Position, mv: Move, rng: &mut ThreadRng, tries: usize) -> f64 {
+pub fn get_black_win_count(pos: &Position, mv: Move, rng: &mut ThreadRng, tries: usize) -> i32 {
     let mut black = 0;
 
     for _i in 0..tries {
@@ -66,5 +85,5 @@ pub fn get_black_win_ratio(pos: &Position, mv: Move, rng: &mut ThreadRng, tries:
             _ => {}
         }
     }
-    (black as f64) / (tries as f64)
+    black
 }
