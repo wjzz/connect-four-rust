@@ -44,11 +44,12 @@ pub fn benchmark_rollouts(retries: usize) {
 }
 
 fn has_a_winning_move(pos: &mut Position, moves: &Vec<Move>) -> Option<GameResult> {
+    let opp = pos.to_play;
     for &mv in moves {
         pos.make_move(mv);
         let result = pos.is_finished();
         if let Some(GameResult::Win(player)) = result {
-            if player == pos.to_play {
+            if player == opp {
                 return result;
             }
         }

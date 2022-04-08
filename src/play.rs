@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use crate::bestmove::*;
 use crate::board::*;
 use crate::util::read_line;
@@ -12,7 +14,16 @@ fn get_move(pos: &Position, ai: &AI) -> Move {
             }
         }
     } else {
-        ai.bestmove(pos)
+        let now = Instant::now();
+
+        let mv = ai.bestmove(pos);
+        let elapsed_secs = now.elapsed().as_secs() as usize;
+        println!(
+            "played move {} after {} seconds",
+            mv,
+            elapsed_secs
+        );
+        return mv;
     }
 }
 
@@ -35,7 +46,7 @@ pub fn play() {
             break;
         }
         // let ai = AI::MinMax(0);
-        let ai = AI::Rollout(10);
+        let ai = AI::Rollout(50);
         let mv = get_move(&pos, &ai);
         // TODO: print move
         pos.make_move(mv);
