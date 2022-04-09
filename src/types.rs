@@ -1,11 +1,11 @@
 pub use crate::position::Position;
 
-pub const ROWS: usize = 15;
-pub const COLS: usize = 15;
+pub const ROWS: usize = 6;
+pub const COLS: usize = 7;
 pub const SIZE: usize = ROWS * COLS;
 
 pub fn rowcol2index(row: usize, col: usize) -> usize {
-    ROWS * row + col
+    COLS * row + col
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -39,19 +39,30 @@ impl Piece {
     }
 }
 
+// A move is the column number
 pub type Move = usize;
 
-pub fn parse_move(s: String) -> Option<Move> {
-    let chars: Vec<char> = s.to_ascii_uppercase().chars().collect();
-    let col = (chars[0] as u8 - ('A' as u8)) as usize;
-    let row: usize = 15 - String::from(&s[1..]).parse::<usize>().unwrap();
-    println!("<s> => (<{}>,<{}>)", row, col);
-
-    Some(rowcol2index(row, col))
+pub fn parse_move(s: String) -> Move {
+    return s.parse::<usize>().unwrap() - 1;
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum GameResult {
     Draw,
     Win(Player),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rowcol() {
+        for row in 0..ROWS {
+            for col in 0..COLS {
+                let index = rowcol2index(row, col);
+                assert!(index < SIZE);
+            }
+        }
+    }
 }

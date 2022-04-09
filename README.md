@@ -11,5 +11,3 @@ cargo run --release -q -- --rollout 5000
 ```
 
 ## BENCHMARKS
-
-Perf speed: 115M nps

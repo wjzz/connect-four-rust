@@ -3,3 +3,6 @@ benchmark:
 
 perft:
 	@cargo run --release -q -- --perft 4
+
+play:
+	@cargo run --release -q -- --play

@@ -1,2 +1,0 @@
-- [+] fix the rollout check - it seems it doesn't recognize wins after all
-- [ ] create a GomokuPosition trait to have a common interface for Position and BitPosition

@@ -1,22 +1,35 @@
 use crate::types::*;
 
 pub type Board = [Piece; SIZE];
+pub type Counts = [usize; COLS];
 
-static mut LINES: Vec<Vec<usize>> = vec![];
+// static mut LINES: Vec<Vec<usize>> = vec![];
 
 pub struct ArrayPosition {
     pub board: Board,
+    pub counts: Counts,
     pub to_play: Player,
     pub move_count: usize,
 }
 
+// Board layout (for COLS=7, ROWS=6)
+
+//  00 01 02 03 04 05 06
+//  07 08 09 10 11 12 13
+//  14 15 16 17 18 19 20
+//  21 22 23 24 25 26 27
+//  28 29 30 31 32 33 34
+//  35 36 37 38 39 40 41
+
 impl Position for ArrayPosition {
     fn new() -> ArrayPosition {
         let board = [Piece::Empty; SIZE];
+        let counts = [0; COLS];
         let to_play = Player::Black;
         let move_count = 0;
         ArrayPosition {
             board,
+            counts,
             to_play,
             move_count,
         }
@@ -28,10 +41,12 @@ impl Position for ArrayPosition {
 
     fn duplicate(self: &Self) -> ArrayPosition {
         let board = self.board.clone();
+        let counts = self.counts.clone();
         let to_play = self.to_play;
         let move_count = self.move_count;
         ArrayPosition {
             board,
+            counts,
             to_play,
             move_count,
         }
@@ -40,12 +55,14 @@ impl Position for ArrayPosition {
     fn ascii(self: &Self) -> String {
         let mut s = String::new();
 
-        let header = "   A B C D E F G H I J K L M N O\n";
+        let header = " 1 2 3 4 5 6 7\n";
+        s += "\n";
         s += header;
+        s += "\n";
 
-        for row in 0..ROWS {
+        for row in (0..ROWS).rev() {
             let row_num = ROWS - row;
-            s += &format!("{:2} ", row_num);
+            s += &format!(" ");
             for col in 0..COLS {
                 let base = rowcol2index(row, col);
                 let ch = match self.board[base] {
@@ -61,9 +78,10 @@ impl Position for ArrayPosition {
                 };
                 s += &format!("{} ", ch);
             }
-            s += &format!("{:2} ", row_num);
+            s += &format!(" ");
             s += "\n";
         }
+        s += "\n";
         s += header;
 
         s
@@ -72,8 +90,8 @@ impl Position for ArrayPosition {
     fn moves(self: &Self) -> Vec<Move> {
         let mut legal_moves = vec![];
 
-        for i in 0..SIZE {
-            if self.board[i] == Piece::Empty {
+        for i in 0..COLS {
+            if self.counts[i] < ROWS {
                 legal_moves.push(i);
             }
         }
@@ -82,25 +100,30 @@ impl Position for ArrayPosition {
     }
 
     fn make_move(self: &mut Self, mv: Move) {
-        debug_assert!(mv < SIZE);
-        debug_assert_eq!(self.board[mv], Piece::Empty);
+        debug_assert!(mv < COLS);
+        debug_assert!(self.counts[mv] < ROWS);
 
-        self.board[mv] = Piece::from_player(self.to_play);
+        let row = self.counts[mv];
+        let index = rowcol2index(row, mv);
+        self.board[index] = Piece::from_player(self.to_play);
+        self.counts[mv] += 1;
         self.to_play = self.to_play.other();
         self.move_count += 1;
     }
 
     fn unmake_move(self: &mut Self, mv: Move) {
-        debug_assert!(mv < SIZE);
+        debug_assert!(self.counts[mv] > 0);
 
-        self.board[mv] = Piece::Empty;
+        self.counts[mv] -= 1;
+        let row = self.counts[mv];
+        let index = rowcol2index(row, mv);
+        self.board[index] = Piece::Empty;
         self.to_play = self.to_play.other();
         self.move_count -= 1;
     }
 
     fn result(self: &Self) -> Option<GameResult> {
-        // TODO: use `is_win_smarter` once it's fully implemented
-        if self.move_count < 9 {
+        if self.move_count < 7 {
             None
         } else if is_win(self.board, self.to_play.other()) {
             Some(GameResult::Win(self.to_play.other()))
@@ -113,15 +136,16 @@ impl Position for ArrayPosition {
 
     fn move_count(self: &Self) -> usize {
         let mut result = 0;
-        for i in 0..SIZE {
-            if self.board[i] == Piece::Empty {
-                result += 1;
+
+        for count in self.counts {
+            if count < ROWS {
+                result += 1
             }
         }
+
         result
     }
 }
-
 
 fn is_win(board: Board, player: Player) -> bool {
     let pp = Piece::from_player(player);
@@ -131,49 +155,41 @@ fn is_win(board: Board, player: Player) -> bool {
             let base = rowcol2index(row, col);
             if board[base] == pp {
                 // row
-                if col + 4 < COLS {
+                if col + 3 < COLS {
                     let d = 1;
                     if pp == board[base + d]
                         && pp == board[base + 2 * d]
                         && pp == board[base + 3 * d]
-                        && pp == board[base + 4 * d]
-                        && pp == board[base + 4 * d]
                     {
                         return true;
                     }
                 }
                 // column
-                if row + 4 < ROWS {
-                    let d = 15;
+                if row + 3 < ROWS {
+                    let d = COLS;
                     if pp == board[base + d]
                         && pp == board[base + 2 * d]
                         && pp == board[base + 3 * d]
-                        && pp == board[base + 4 * d]
-                        && pp == board[base + 4 * d]
                     {
                         return true;
                     }
                 }
                 // rising diagonal
-                if row + 4 < ROWS && col >= 4 {
-                    let d = 14;
+                if row + 3 < ROWS && col >= 3 {
+                    let d = COLS - 1;
                     if pp == board[base + d]
                         && pp == board[base + 2 * d]
                         && pp == board[base + 3 * d]
-                        && pp == board[base + 4 * d]
-                        && pp == board[base + 4 * d]
                     {
                         return true;
                     }
                 }
                 // decreasing diagonal
-                if row + 4 < ROWS && col + 4 < COLS {
-                    let d = 16;
+                if row + 3 < ROWS && col + 3 < COLS {
+                    let d = COLS + 1;
                     if pp == board[base + d]
                         && pp == board[base + 2 * d]
                         && pp == board[base + 3 * d]
-                        && pp == board[base + 4 * d]
-                        && pp == board[base + 4 * d]
                     {
                         return true;
                     }
@@ -181,46 +197,6 @@ fn is_win(board: Board, player: Player) -> bool {
             }
         }
     }
-    false
-}
-
-fn is_win_smarter(board: Board, player: Player) -> bool {
-    let pp = Piece::from_player(player);
-
-    // rows
-    for col in 0 .. COLS {
-        let mut count = 0;
-        for row in 0 .. (ROWS - 4) {
-            let index = rowcol2index(row, col);
-            if board[index] == pp {
-                count += 1;
-                if count == 5 {
-                    return true;
-                }
-            } else {
-                count = 0;
-            }
-        }
-    }
-
-    // cols
-    for row in 0 .. ROWS {
-        let mut count = 0;
-        for col in 0 .. (COLS - 4) {
-            let index = rowcol2index(row, col);
-            if board[index] == pp {
-                count += 1;
-                if count == 5 {
-                    return true;
-                }
-            } else {
-                count = 0;
-            }
-        }
-    }
-
-    // TODO: diagonals
-
     false
 }
 
@@ -234,17 +210,92 @@ mod tests {
 
         let move_count = pos.moves().len();
 
-        assert_eq!(move_count, SIZE);
+        assert_eq!(move_count, COLS);
     }
 
     #[test]
     pub fn moves_count_made_moves() {
         let mut pos = ArrayPosition::new();
+        for _ in 0..ROWS {
+            pos.make_move(0);
+        }
+        let move_count = pos.moves().len();
+
+        assert_eq!(move_count, COLS - 1);
+    }
+
+    #[test]
+    pub fn example_win_row() {
+        let mut pos = ArrayPosition::new();
+        pos.make_move(0);
+        pos.make_move(0);
+        pos.make_move(1);
+        pos.make_move(1);
+        pos.make_move(2);
+        pos.make_move(2);
+        pos.make_move(3);
+
+        assert!(pos.result() == Some(GameResult::Win(Player::Black)));
+    }
+
+    #[test]
+    pub fn example_win_col() {
+        let mut pos = ArrayPosition::new();
+        pos.make_move(0);
+        pos.make_move(1);
+        pos.make_move(0);
+        pos.make_move(1);
+        pos.make_move(0);
+        pos.make_move(1);
+        pos.make_move(0);
+
+        assert!(pos.result() == Some(GameResult::Win(Player::Black)));
+    }
+
+
+    #[test]
+    pub fn example_win_dia() {
+        let mut pos = ArrayPosition::new();
         pos.make_move(0);
         pos.make_move(1);
 
-        let move_count = pos.moves().len();
+        pos.make_move(1);
+        pos.make_move(2);
 
-        assert_eq!(move_count, SIZE - 2);
+        pos.make_move(3);
+        pos.make_move(2);
+
+        pos.make_move(2);
+        pos.make_move(3);
+
+        pos.make_move(3);
+        pos.make_move(0);
+
+        pos.make_move(3);
+
+        assert!(pos.result() == Some(GameResult::Win(Player::Black)));
+    }
+
+    #[test]
+    pub fn example_win_dia2() {
+        let mut pos = ArrayPosition::new();
+        pos.make_move(3);
+        pos.make_move(2);
+
+        pos.make_move(2);
+        pos.make_move(1);
+
+        pos.make_move(0);
+        pos.make_move(1);
+
+        pos.make_move(1);
+        pos.make_move(0);
+
+        pos.make_move(0);
+        pos.make_move(3);
+
+        pos.make_move(0);
+
+        assert!(pos.result() == Some(GameResult::Win(Player::Black)));
     }
 }

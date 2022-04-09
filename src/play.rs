@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use crate::bestmove::*;
+use crate::solve::*;
 use crate::board::*;
 use crate::types::*;
 use crate::util::read_line;
@@ -10,9 +10,7 @@ fn get_move(pos: &ArrayPosition, ai: &AI) -> Move {
         loop {
             println!("Play a move (eg. A5)> ");
             let line = read_line();
-            if let Some(mv) = parse_move(line) {
-                return mv;
-            }
+            return parse_move(line);
         }
     } else {
         let now = Instant::now();
@@ -46,8 +44,7 @@ pub fn play() {
             println!("Game is finished! Result: {}", msg);
             break;
         }
-        // let ai = AI::MinMax(0);
-        let ai = AI::Rollout(50);
+        let ai = AI::MinMax(0);
         let mv = get_move(&pos, &ai);
         // TODO: print move
         pos.make_move(mv);
