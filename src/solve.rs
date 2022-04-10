@@ -1,97 +1,92 @@
-use rand::prelude::*;
+use std::collections::HashMap;
+use std::time::Instant;
+use thousands::Separable;
 
 use crate::types::*;
 use crate::board::ArrayPosition;
 
+static mut NODE_COUNT: usize = 0;
 
-impl ArrayPosition {
-    pub fn bestmove_minmax(self: &Self, depth: usize) -> Move {
-        let moves = self.moves();
-
-        let mut current_eval = vec![];
-        let mut pos = self.duplicate();
-        let mut best_eval = -100000.0;
-        for mv in moves {
-            pos.make_move(mv);
-            let evaluation = pos.evaluate_minmax(depth);
-            if evaluation > best_eval {
-                best_eval = evaluation;
-                current_eval = vec![mv];
-            } else if (evaluation - best_eval).abs() < 0.01 {
-                current_eval.push(mv);
-            }
-            pos.unmake_move(mv);
+pub fn solve_iterative_deepening() {
+    unsafe {
+        let depth = SIZE + 1;
+        let now = Instant::now();
+        let result = solve(&mut ArrayPosition::new(), depth);
+        let mut elapsed_millisecs = now.elapsed().as_millis() as usize;
+        if elapsed_millisecs == 0 {
+            elapsed_millisecs = 1;
         }
+        let nps = NODE_COUNT / elapsed_millisecs;
 
-        let mut rng = thread_rng();
-        *current_eval.choose(&mut rng).unwrap()
+        println!(
+            "depth = {:2} | result = {:6} | nodes = {:12} | [elapsed: {}] [speed: {}K nps]",
+            depth,
+            result,
+            NODE_COUNT.separate_with_commas(),
+            elapsed_millisecs,
+            nps.separate_with_commas(),
+        );
     }
+}
 
-    pub fn evaluate_minmax(self: &mut Self, depth: usize) -> f64 {
-        if let Some(result) = self.result() {
-            match result {
-                GameResult::Win(player) => {
-                    if player == self.to_play {
-                        return -10000.0;
-                    } else {
-                        return 10000.0;
-                    }
+const MIN_DEPTH: usize = 3;
+const MAX_DEPTH: usize = 12;
+
+pub fn solve(pos: &mut ArrayPosition, depth: usize) -> i32 {
+    unsafe {
+        NODE_COUNT = 0;
+    }
+    let mut hashmap = HashMap::new();
+    return solve_iter(pos, &mut hashmap, depth);
+}
+
+const UNKNOWN: i32 = 10_000;
+const MY_WIN: i32 = 10;
+
+fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, i32>, depth: usize) -> i32 {
+    unsafe {
+        NODE_COUNT += 1;
+    }
+    if let Some(result) = pos.result() {
+        match result {
+            GameResult::Draw => return 0,
+            GameResult::Win(player) =>
+                if player == pos.to_play {
+                    return MY_WIN;
+                } else {
+                    return -MY_WIN;
                 }
-                GameResult::Draw => {
-                    return 0.0;
+        }
+    } else {
+        let mut best_eval = -UNKNOWN;
+        if depth > 0 {
+            if depth >= MIN_DEPTH && depth <= MAX_DEPTH {
+                if let Some(result) = hashmap.get(&pos.hash()) {
+                    return *result;
+                }
+            }
+            let moves = pos.moves();
+            for mv in moves {
+                if depth == SIZE+1 {
+                    println!("mv = {}", mv);
+                } else if depth == SIZE {
+                    println!("  mv = {}", mv);
+                }
+                pos.make_move(mv);
+                let eval = -solve_iter(pos, hashmap, depth-1);
+                if eval > best_eval {
+                    best_eval = eval;
+                }
+                pos.unmake_move(mv);
+
+                if eval == MY_WIN {
+                    break;
                 }
             }
         }
-
-        if depth == 0 {
-            return 0.0;
-            // return self.evaluate();
+        if depth >= MIN_DEPTH && depth <= MAX_DEPTH {
+            hashmap.insert(pos.hash(), best_eval);
         }
-
-        let mut best = -100000.0;
-        let moves = self.moves();
-        for mv in moves {
-            self.make_move(mv);
-            let evaluation = -1.0 * self.evaluate_minmax(depth - 1);
-            if evaluation > best {
-                best = evaluation;
-            }
-            self.unmake_move(mv);
-        }
-        best
-    }
-}
-
-pub enum AI {
-    MinMax(usize),
-}
-
-impl AI {
-    pub fn show(self: &Self) -> String {
-        match self {
-            AI::MinMax(depth) => format!("minmax(depth={})", depth),
-        }
-    }
-
-    pub fn bestmove(self: &Self, pos: &ArrayPosition) -> Move {
-        match self {
-            AI::MinMax(depth) => pos.bestmove_minmax(*depth),
-        }
-    }
-}
-
-pub fn play_game(black_ai: &AI, white_ai: &AI) -> GameResult {
-    let mut pos = ArrayPosition::new();
-    loop {
-        if let Some(result) = pos.result() {
-            // println!("{}", pos.ascii());
-            return result;
-        }
-        let mv = if pos.to_play == Player::Black {
-            black_ai.bestmove(&pos)
-        } else {
-            white_ai.bestmove(&pos)
-        };
-        pos.make_move(mv);
+        return best_eval;
     }
 }

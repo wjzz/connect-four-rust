@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use crate::solve::*;
+use crate::bestmove::*;
 use crate::board::*;
 use crate::types::*;
 use crate::util::read_line;

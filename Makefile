@@ -6,3 +6,6 @@ perft:
 
 play:
 	@cargo run --release -q -- --play
+
+solve:
+	@cargo run --release -q -- --solve

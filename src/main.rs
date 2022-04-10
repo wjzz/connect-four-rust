@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
+mod bestmove;
 mod board;
 mod perft;
 mod play;
@@ -42,6 +43,9 @@ fn main() {
         }
         "--play" => {
             play::play();
+        }
+        "--solve" => {
+            solve::solve_iterative_deepening();
         }
         _ => {
             show_usage_and_exit();
