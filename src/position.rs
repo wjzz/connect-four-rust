@@ -1,4 +1,9 @@
+use std::collections::HashMap;
+
 use crate::types::*;
+
+const MIN_DEPTH: usize = 3;
+const MAX_DEPTH: usize = 12;
 
 pub trait Position {
     fn new() -> Self;
@@ -18,25 +23,64 @@ pub trait Position {
     }
 
     fn perft(self: &mut Self, depth: usize) -> usize {
-        self.perft_iter(depth, 0)
+        let mut hashmap = HashMap::new();
+
+        self.perft_iter(depth, &mut hashmap)
     }
 
-    fn perft_iter(self: &mut Self, depth: usize, level: usize) -> usize {
-        if self.result().is_none() {
-            if depth == 1 {
+    fn perft_iter(self: &mut Self, depth: usize, hashmap: &mut HashMap<usize, usize>) -> usize {
+        if depth == 1 {
+            if self.result().is_none() {
                 return self.move_count();
+            } else {
+                return 0;
+            }
+        } else {
+            if depth >= MIN_DEPTH && depth <= MAX_DEPTH {
+                if let Some(result) = hashmap.get(&self.hash()) {
+                    return *result;
+                }
+            }
+            if self.result().is_some() {
+                return 0;
             } else {
                 let moves = self.moves();
                 let mut result = 0;
                 for mv in moves {
                     self.make_move(mv);
-                    result += self.perft_iter(depth - 1, level + 1);
+                    result += self.perft_iter(depth - 1, hashmap);
                     self.unmake_move(mv);
+                }
+                if depth >= MIN_DEPTH && depth <= MAX_DEPTH {
+                    hashmap.insert(self.hash(), result);
                 }
                 return result;
             }
-        } else {
-            return 0;
         }
+
+        // if self.result().is_none() {
+        //     if depth == 1 {
+        //         return self.move_count();
+        //     } else {
+        //         if depth >= MIN_DEPTH && depth <= MAX_DEPTH {
+        //             if let Some(result) = hashmap.get(&self.hash()) {
+        //                 return *result;
+        //             }
+        //         }
+        //         let moves = self.moves();
+        //         let mut result = 0;
+        //         for mv in moves {
+        //             self.make_move(mv);
+        //             result += self.perft_iter(depth - 1, hashmap);
+        //             self.unmake_move(mv);
+        //         }
+        //         if depth >= MIN_DEPTH && depth <= MAX_DEPTH {
+        //             hashmap.insert(self.hash(), result);
+        //         }
+        //         return result;
+        //     }
+        // } else {
+        //     return 0;
+        // }
     }
 }
