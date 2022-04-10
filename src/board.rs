@@ -1,3 +1,4 @@
+use rand::prelude::*;
 use crate::types::*;
 
 pub type Board = [Piece; SIZE];
@@ -5,6 +6,7 @@ pub type Counts = [usize; COLS];
 
 pub static mut LINES: Vec<Vec<usize>> = vec![];
 pub static mut LINES_BY_INDEX: Vec<Vec<Vec<usize>>> = vec![];
+pub static mut ZOBRIST: [[usize; SIZE];2] = [[0; SIZE]; 2];
 
 // static mut LINES: Vec<Vec<usize>> = vec![];
 
@@ -13,6 +15,7 @@ pub struct ArrayPosition {
     pub counts: Counts,
     pub to_play: Player,
     pub move_count: usize,
+    pub hash: usize,
 }
 
 // Board layout (for COLS=7, ROWS=6)
@@ -30,11 +33,13 @@ impl Position for ArrayPosition {
         let counts = [0; COLS];
         let to_play = Player::Black;
         let move_count = 0;
+        let hash = 0;
         ArrayPosition {
             board,
             counts,
             to_play,
             move_count,
+            hash,
         }
     }
 
@@ -42,16 +47,22 @@ impl Position for ArrayPosition {
         self.to_play
     }
 
+    fn hash(self: &Self) -> usize {
+        self.hash
+    }
+
     fn duplicate(self: &Self) -> ArrayPosition {
         let board = self.board.clone();
         let counts = self.counts.clone();
         let to_play = self.to_play;
         let move_count = self.move_count;
+        let hash = self.hash;
         ArrayPosition {
             board,
             counts,
             to_play,
             move_count,
+            hash,
         }
     }
 
@@ -112,6 +123,9 @@ impl Position for ArrayPosition {
         self.counts[mv] += 1;
         self.to_play = self.to_play.other();
         self.move_count += 1;
+        unsafe {
+            self.hash ^= ZOBRIST[self.to_play as usize][index];
+        }
     }
 
     fn unmake_move(self: &mut Self, mv: Move) {
@@ -121,6 +135,9 @@ impl Position for ArrayPosition {
         let row = self.counts[mv];
         let index = rowcol2index(row, mv);
         self.board[index] = Piece::Empty;
+        unsafe {
+            self.hash ^= ZOBRIST[self.to_play as usize][index];
+        }
         self.to_play = self.to_play.other();
         self.move_count -= 1;
     }
@@ -128,7 +145,7 @@ impl Position for ArrayPosition {
     fn result(self: &Self) -> Option<GameResult> {
         if self.move_count < 7 {
             None
-        } else if is_win_lines(self.board, self.to_play.other()) {
+        } else if is_win(self.board, self.to_play.other()) {
             Some(GameResult::Win(self.to_play.other()))
         } else if self.move_count == SIZE {
             Some(GameResult::Draw)
@@ -262,7 +279,7 @@ fn is_win(board: Board, player: Player) -> bool {
     false
 }
 
-pub fn initialize_lines() {
+fn initialize_lines() {
     unsafe {
         for row in 0..ROWS {
             for col in 0..COLS {
@@ -292,7 +309,7 @@ pub fn initialize_lines() {
     }
 }
 
-pub fn initialize_lines_by_index() {
+fn initialize_lines_by_index() {
     unsafe {
         for row in 0..ROWS {
             for col in 0..COLS {
@@ -335,6 +352,23 @@ fn is_win_fast(board: Board, last_col: Move, last_row: usize) -> bool {
         }
     }
     false
+}
+
+fn initialize_hashes() {
+    let mut rng = thread_rng();
+    unsafe {
+        for player in 0..2 {
+            for i in 0..SIZE {
+                ZOBRIST[player][i] = rng.gen();
+            }
+        }
+    }
+}
+
+pub fn initialize() {
+    initialize_lines();
+    initialize_lines_by_index();
+    initialize_hashes();
 }
 
 

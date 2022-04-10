@@ -28,8 +28,7 @@ fn main() {
         show_usage_and_exit();
     }
 
-    board::initialize_lines();
-    board::initialize_lines_by_index();
+    board::initialize();
 
     match &args[0][..] {
         "--perft" => {
