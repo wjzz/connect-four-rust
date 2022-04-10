@@ -29,8 +29,8 @@ pub fn solve_iterative_deepening() {
     }
 }
 
-const MIN_DEPTH: usize = 3;
-const MAX_DEPTH: usize = 10;
+const MIN_DEPTH: usize = 4;
+const MAX_DEPTH: usize = 24;
 
 pub fn solve(pos: &mut ArrayPosition, depth: usize) -> i32 {
     unsafe {
@@ -70,7 +70,7 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, dept
     } else {
         let orig_alpha = alpha;
         if depth > 0 {
-            if depth >= MIN_DEPTH && depth <= MAX_DEPTH {
+            if depth >= SIZE - MAX_DEPTH && depth <= SIZE - MIN_DEPTH {
                 if let Some(entry) = hashmap.get(&pos.hash()) {
                     if entry.depth >= depth {
                         if entry.flag == EXACT {
@@ -94,6 +94,8 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, dept
                     println!("mv = {}", mv);
                 } else if depth == SIZE {
                     println!("  mv = {}", mv);
+                } else if depth == SIZE-1 {
+                    println!("    mv = {}", mv);
                 }
                 pos.make_move(mv);
                 let eval = -solve_iter(pos, hashmap, depth-1, -beta, -alpha);
@@ -107,7 +109,7 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, dept
                 }
             }
         }
-        if depth >= MIN_DEPTH && depth <= MAX_DEPTH {
+        if depth >= SIZE - MAX_DEPTH && depth <= SIZE - MIN_DEPTH {
             let mut flag = EXACT;
             if alpha <= orig_alpha {
                 flag = UPPERBOUND;
@@ -129,10 +131,21 @@ fn get_lines_count(pos: &ArrayPosition, mv: Move) -> i32 {
     let pp = Piece::from_player(pos.to_play);
     unsafe {
         for line in &crate::board::LINES_BY_INDEX[index] {
+            let mut line_count = 0;
             for i in line {
                 if pos.board[*i] == pp {
-                    count += 1;
+                    line_count += 1;
+                } else if pos.board[*i] != Piece::Empty {
+                    line_count -= 1;
                 }
+            }
+            // sure win
+            if line_count == 3 {
+                count += 10_000;
+            } else if line_count == 2 {
+                count += 100;
+            } else {
+                count += line_count.max(0);
             }
         }
     }

@@ -29,10 +29,16 @@
 | 5x5 | draw |   312,660,988 | 39s    | minimax w/ hashmap (3-12)
 | 5x5 | draw | 2,135,732,339 | 2m 5s  | alpha-beta
 | 5x5 | draw |   111,610,966 | 13s    | alpha-beta w/ move ordering
-| 5x5 | draw |     6,837,692 | 1.7s   | alpha-beta w/ move ordering & hashmap
+| 5x5 | draw |     7,891,967 | 1.2s   | alpha-beta w/ move ordering & hashmap
 
 | 6x5 | draw |  1,801,601,736 | 3m 30s | alpha-beta w/ move ordering
-| 6x5 | draw |     62,827,049 | 16s    | alpha-beta w/ move ordering & hashmap
+| 6x5 | draw |     25,860,327 |     7s | alpha-beta w/ move ordering & hashmap
 
 | 5x6 | draw | 10,030,145,152 | 19m 31s | alpha-beta w/ move ordering
-| 5x6 | draw |    695,365,956 |  2m 20s | alpha-beta w/ move ordering
+| 5x6 | draw |     47,382,760 |     14s | alpha-beta w/ move ordering & hashmap
+
+## move ordering improvements
+
+depth = 26 | result =      0 | nodes = 19,625,891   | [elapsed: 2375] [speed: 8,263K nps]
+depth = 26 | result =      0 | nodes = 9,841,261    | [elapsed: 1479] [speed: 6,653K nps]
+depth = 26 | result =      0 | nodes = 7,891,967    | [elapsed: 1231] [speed: 6,411K nps]

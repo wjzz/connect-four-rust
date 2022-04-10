@@ -1,0 +1,3 @@
+- solve 6x6 (use more memory)
+- solve 7x6
+- solve 6x7 (finish!)
