@@ -15,6 +15,7 @@ nodes after 10 moves = 268,031,646 [elapsed: 2891] [speed:  92M nps]
 
 ## transposition table at level 3-12 (mem = 1.1 giga) ==> extremely fast
 
+$ for i in `seq 1 25`; do cargo run --release -q -- --perft $i; done
 nodes after 1 moves = 7 [elapsed: 1] [speed: 0M nps]
 nodes after 2 moves = 49 [elapsed: 1] [speed: 0M nps]
 nodes after 3 moves = 343 [elapsed: 1] [speed: 0M nps]
@@ -24,12 +25,15 @@ nodes after 6 moves = 117,649 [elapsed: 1] [speed: 117M nps]
 nodes after 7 moves = 823,536 [elapsed: 1] [speed: 823M nps]
 nodes after 8 moves = 5,673,234 [elapsed: 14] [speed: 405M nps]
 nodes after 9 moves = 39,394,572 [elapsed: 61] [speed: 645M nps]
-nodes after 10 moves = 268,031,646 [elapsed: 236] [speed: 1,135M nps]
-nodes after 11 moves = 1,844,590,828 [elapsed: 739] [speed: 2,496M nps]
-nodes after 12 moves = 12,418,296,244 [elapsed: 2240] [speed: 5,543M nps]
-nodes after 13 moves = 84,496,181,330 [elapsed: 6787] [speed: 12,449M nps]
-nodes after 14 moves = 561,418,982,986 [elapsed: 19216] [speed: 29,216M nps]
-nodes after 15 moves = 3,759,153,135,986 [elapsed: 53179] [speed: 70,688M nps]
+nodes after 10 moves = 268,031,646 [elapsed: 216] [speed: 1,240M nps]
+nodes after 11 moves = 1,844,590,828 [elapsed: 718] [speed: 2,569M nps]
+nodes after 12 moves = 12,418,296,244 [elapsed: 2202] [speed: 5,639M nps]
+nodes after 13 moves = 84,496,181,330 [elapsed: 6496] [speed: 13,007M nps]
+nodes after 14 moves = 561,418,982,986 [elapsed: 17784] [speed: 31,568M nps]
+nodes after 15 moves = 3,759,153,135,986 [elapsed: 48205] [speed: 77,982M nps]
+nodes after 16 moves = 24,525,293,139,188 [elapsed: 121386] [speed: 202,043M nps]
+nodes after 17 moves = 160,623,521,108,382 [elapsed: 302987] [speed: 530,133M nps]
+
 
 # 4x4
 
