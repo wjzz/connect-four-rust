@@ -30,7 +30,7 @@ pub fn solve_iterative_deepening() {
 }
 
 const MIN_DEPTH: usize = 3;
-const MAX_DEPTH: usize = 12;
+const MAX_DEPTH: usize = 10;
 
 pub fn solve(pos: &mut ArrayPosition, depth: usize) -> i32 {
     unsafe {
@@ -43,7 +43,17 @@ pub fn solve(pos: &mut ArrayPosition, depth: usize) -> i32 {
 const UNKNOWN: i32 = 10_000;
 const MY_WIN: i32 = 10;
 
-fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, i32>, depth: usize, mut alpha: i32, beta: i32) -> i32 {
+struct Entry {
+    depth: usize,
+    flag: usize,
+    value: i32,
+}
+
+const EXACT: usize = 0;
+const LOWERBOUND: usize = 1;
+const UPPERBOUND: usize = 2;
+
+fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, depth: usize, mut alpha: i32, mut beta: i32) -> i32 {
     unsafe {
         NODE_COUNT += 1;
     }
@@ -58,12 +68,25 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, i32>, depth:
                 }
         }
     } else {
+        let orig_alpha = alpha;
         if depth > 0 {
-            // if depth >= MIN_DEPTH && depth <= MAX_DEPTH {
-            //     if let Some(result) = hashmap.get(&pos.hash()) {
-            //         return *result;
-            //     }
-            // }
+            if depth >= MIN_DEPTH && depth <= MAX_DEPTH {
+                if let Some(entry) = hashmap.get(&pos.hash()) {
+                    if entry.depth >= depth {
+                        if entry.flag == EXACT {
+                            return entry.value;
+                        } else if entry.flag == LOWERBOUND {
+                            alpha = alpha.max(entry.value);
+                        } else {
+                            // upperbound
+                            beta = beta.min(entry.value);
+                        }
+                        if alpha >= beta {
+                            return entry.value;
+                        }
+                    }
+                }
+            }
             let mut moves = pos.moves();
             order_moves(pos, &mut moves);
             for mv in moves {
@@ -84,9 +107,18 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, i32>, depth:
                 }
             }
         }
-        // if depth >= MIN_DEPTH && depth <= MAX_DEPTH {
-            // hashmap.insert(pos.hash(), best_eval);
-        // }
+        if depth >= MIN_DEPTH && depth <= MAX_DEPTH {
+            let mut flag = EXACT;
+            if alpha <= orig_alpha {
+                flag = UPPERBOUND;
+            } else if alpha >= beta {
+                flag = LOWERBOUND;
+            }
+
+            let value = alpha;
+            let entry = Entry { depth, value, flag };
+            hashmap.insert(pos.hash(), entry);
+        }
         return alpha;
     }
 }

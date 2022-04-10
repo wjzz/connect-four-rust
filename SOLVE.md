@@ -18,16 +18,21 @@
 | 5x4 | draw |     3,981,203 | 0.5s   | minimax w/ hashmap
 | 5x4 | draw |     1,227,610 | 0.1s   | alpha-beta
 | 5x4 | draw |       223,881 | 0.025s | alpha-beta w/ move ordering
+| 5x4 | draw |        60,113 | 0.015s | alpha-beta w/ move ordering & hashmap
 
 | 4x5 | draw | 11,776,485 | 1.3s  | minimax w/ hashmap
 | 4x5 | draw | 18,026,614 | 0.97s | alpha-beta
 | 4x5 | draw |  4,185,836 | 0.49s | alpha-beta w/ move ordering
+| 4x5 | draw |    452,864 | 0.1s  | alpha-beta w/ move ordering & hashmap
 
 | 5x5 | draw | 2,374,557,239 | 3m 14s | minimax w/ hashmap (3-10)
 | 5x5 | draw |   312,660,988 | 39s    | minimax w/ hashmap (3-12)
 | 5x5 | draw | 2,135,732,339 | 2m 5s  | alpha-beta
 | 5x5 | draw |   111,610,966 | 13s    | alpha-beta w/ move ordering
+| 5x5 | draw |     6,837,692 | 1.7s   | alpha-beta w/ move ordering & hashmap
 
 | 6x5 | draw |  1,801,601,736 | 3m 30s | alpha-beta w/ move ordering
+| 6x5 | draw |     62,827,049 | 16s    | alpha-beta w/ move ordering & hashmap
 
 | 5x6 | draw | 10,030,145,152 | 19m 31s | alpha-beta w/ move ordering
+| 5x6 | draw |    695,365,956 |  2m 20s | alpha-beta w/ move ordering
