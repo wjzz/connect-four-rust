@@ -3,6 +3,9 @@ use crate::types::*;
 pub type Board = [Piece; SIZE];
 pub type Counts = [usize; COLS];
 
+pub static mut LINES: Vec<Vec<usize>> = vec![];
+pub static mut LINES_BY_INDEX: Vec<Vec<Vec<usize>>> = vec![];
+
 // static mut LINES: Vec<Vec<usize>> = vec![];
 
 pub struct ArrayPosition {
@@ -125,7 +128,19 @@ impl Position for ArrayPosition {
     fn result(self: &Self) -> Option<GameResult> {
         if self.move_count < 7 {
             None
-        } else if is_win(self.board, self.to_play.other()) {
+        } else if is_win_lines(self.board, self.to_play.other()) {
+            Some(GameResult::Win(self.to_play.other()))
+        } else if self.move_count == SIZE {
+            Some(GameResult::Draw)
+        } else {
+            None
+        }
+    }
+
+    fn fast_result(self: &Self, mv: Move) -> Option<GameResult> {
+        if self.move_count < 7 {
+            None
+        } else if is_win_fast(self.board, mv, self.counts[mv]-1) {
             Some(GameResult::Win(self.to_play.other()))
         } else if self.move_count == SIZE {
             Some(GameResult::Draw)
@@ -146,6 +161,53 @@ impl Position for ArrayPosition {
         result
     }
 }
+
+fn has_a_winning_line(board: &Board, pp: Piece, index: usize, d: usize, start: usize, end: usize) -> bool {
+    let mut curr = start;
+    let mut count = 0;
+    while curr <= end {
+        if board[curr] == pp {
+            count += 1;
+            if count == 4 {
+                return true;
+            }
+        } else {
+            count = 0;
+        }
+        curr -= d;
+    }
+    false
+}
+
+fn is_win_fast__(board: Board, last_col: Move, last_row: usize) -> bool {
+    let index = rowcol2index(last_row, last_col);
+    let pp = board[index];
+
+    // - rows
+    let d = 1;
+    let start = 0.max(last_col-3);
+    let end = COLS.min(last_col+3);
+    if has_a_winning_line(&board, pp, index, d, start, end) {
+        return true;
+    }
+
+    // | last col
+    if last_row >= 3 {
+        let d = COLS;
+        if pp == board[index - d]
+        && pp == board[index - 2 * d]
+        && pp == board[index - 3 * d]
+        {
+            return true;
+        }
+    }
+
+    // / diagonal
+
+    // \ diagonal
+    false
+}
+
 
 fn is_win(board: Board, player: Player) -> bool {
     let pp = Piece::from_player(player);
@@ -199,6 +261,82 @@ fn is_win(board: Board, player: Player) -> bool {
     }
     false
 }
+
+pub fn initialize_lines() {
+    unsafe {
+        for row in 0..ROWS {
+            for col in 0..COLS {
+                let base = rowcol2index(row, col);
+                // rows
+                if col + 3 < COLS {
+                    let d = 1;
+                    LINES.push(vec![base, base+d, base+2*d, base+3*d]);
+                }
+                // column
+                if row + 3 < ROWS {
+                    let d = COLS;
+                    LINES.push(vec![base, base+d, base+2*d, base+3*d]);
+                }
+                // rising diagonal
+                if row + 3 < ROWS && col >= 3 {
+                    let d = COLS - 1;
+                    LINES.push(vec![base, base+d, base+2*d, base+3*d]);
+                }
+                // decreasing diagonal
+                if row + 3 < ROWS && col + 3 < COLS {
+                    let d = COLS + 1;
+                    LINES.push(vec![base, base+d, base+2*d, base+3*d]);
+                }
+            }
+        }
+    }
+}
+
+pub fn initialize_lines_by_index() {
+    unsafe {
+        for row in 0..ROWS {
+            for col in 0..COLS {
+                let base = rowcol2index(row, col);
+                let mut v = vec![];
+
+                for line in &LINES {
+                    if line[0] == base || line[1] == base || line[2] == base || line[3] == base {
+                        v.push(line.clone());
+                    }
+                }
+                LINES_BY_INDEX.push(v);
+            }
+        }
+    }
+}
+
+fn is_win_lines(board: Board, player: Player) -> bool {
+    unsafe {
+        let pp = Piece::from_player(player);
+
+        for line in &LINES {
+            if board[line[0]] == pp && board[line[1]] == pp && board[line[2]] == pp && board[line[3]] == pp {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+fn is_win_fast(board: Board, last_col: Move, last_row: usize) -> bool {
+    let index = rowcol2index(last_row, last_col);
+    let pp = board[index];
+
+    unsafe {
+        for line in &LINES_BY_INDEX[index] {
+            if board[line[0]] == pp && board[line[1]] == pp && board[line[2]] == pp && board[line[3]] == pp {
+                return true;
+            }
+        }
+    }
+    false
+}
+
 
 #[cfg(test)]
 mod tests {

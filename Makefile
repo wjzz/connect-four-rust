@@ -1,5 +1,5 @@
 benchmark:
-	@cargo run --release -q -- --rollout 50000
+	@cargo run --release -q -- --rollout 1000000
 
 perft:
 	@cargo run --release -q -- --perft 4

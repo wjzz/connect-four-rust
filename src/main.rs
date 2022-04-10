@@ -4,6 +4,7 @@
 mod board;
 mod perft;
 mod play;
+mod rollouts;
 mod solve;
 mod position;
 mod types;
@@ -27,11 +28,18 @@ fn main() {
         show_usage_and_exit();
     }
 
+    board::initialize_lines();
+    board::initialize_lines_by_index();
+
     match &args[0][..] {
         "--perft" => {
             let depth = parse_string(args.get(1), 3);
             perft::perft::<ArrayPosition>(depth);
             // perft::perft::<BitPosition>(depth);
+        }
+        "--rollout" => {
+            let retries = parse_string(args.get(1), 1000);
+            rollouts::benchmark_rollouts(retries);
         }
         "--play" => {
             play::play();
