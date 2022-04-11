@@ -97,7 +97,7 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize, mut al
                         return DRAW;
                     }
                 }
-            }
+                }
             let mut moves = pos.moves();
             order_moves(pos, &mut moves);
             for mv in moves {
