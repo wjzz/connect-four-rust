@@ -34,7 +34,7 @@ pub fn solve_iterative_deepening() {
 }
 
 const MIN_DEPTH: usize = 4;
-const MAX_DEPTH: usize = 20;
+const MAX_DEPTH: usize = 18;
 
 pub fn solve(pos: &mut ArrayPosition, depth: usize) -> i32 {
     unsafe {
