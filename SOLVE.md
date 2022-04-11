@@ -55,3 +55,8 @@
 depth = 26 | result =      0 | nodes = 19,625,891   | [elapsed: 2375] [speed: 8,263K nps]
 depth = 26 | result =      0 | nodes = 9,841,261    | [elapsed: 1479] [speed: 6,653K nps]
 depth = 26 | result =      0 | nodes = 7,891,967    | [elapsed: 1231] [speed: 6,411K nps]
+
+## transposition table (wrong result)
+
+collissions = 43587794
+depth = 37 | result =      0 | nodes = 734,845,553  | [elapsed: 241041] [speed: 3,048K nps]

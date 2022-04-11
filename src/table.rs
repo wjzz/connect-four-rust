@@ -1,7 +1,10 @@
 // https://planetmath.org/goodhashtableprimes
 
-// const HASHTABLE_SIZE: usize = 2_147_483_647;
-const HASHTABLE_SIZE: usize = 100_663_319;
+const HASHTABLE_SIZE: usize = 2_147_483_647;  // 32 giga
+// const HASHTABLE_SIZE: usize = 1_610_612_741;  // 25 giga
+
+// 3.2
+// 201326611
 
 #[derive(Clone)]
 struct Entry {
@@ -28,8 +31,8 @@ impl Table {
         if field.value != -1 {
             self.collissions += 1;
         }
-        self.keys[hash % HASHTABLE_SIZE].hash = hash;
-        self.keys[hash % HASHTABLE_SIZE].value = value;
+        field.hash = hash;
+        field.value = value;
     }
 
     pub fn get(self: &Self, hash: usize) -> Option<i32> {
