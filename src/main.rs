@@ -8,6 +8,7 @@ mod play;
 mod rollouts;
 mod solve;
 mod position;
+mod table;
 mod types;
 mod util;
 
@@ -30,6 +31,8 @@ fn main() {
     }
 
     board::initialize();
+
+    crate::table::Table::new();
 
     match &args[0][..] {
         "--perft" => {

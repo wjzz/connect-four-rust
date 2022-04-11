@@ -1,14 +1,15 @@
-use std::collections::HashMap;
 use std::io::Write;
 use std::time::Instant;
 use thousands::Separable;
 
+use crate::table::Table;
 use crate::types::*;
 use crate::board::ArrayPosition;
 
 static mut NODE_COUNT: usize = 0;
 
 pub fn solve_iterative_deepening() {
+
     unsafe {
         println!("");
         println!("");
@@ -33,15 +34,14 @@ pub fn solve_iterative_deepening() {
     }
 }
 
-const MIN_DEPTH: usize = 4;
-const MAX_DEPTH: usize = 20;
-
 pub fn solve(pos: &mut ArrayPosition, depth: usize) -> i32 {
     unsafe {
         NODE_COUNT = 0;
     }
-    let mut hashmap = HashMap::new();
-    return solve_iter(pos, &mut hashmap, depth, -WIN, WIN);
+    let mut hashmap = Table::new();
+    let result = solve_iter(pos, &mut hashmap, depth, -WIN, WIN);
+    println!("\ncollissions = {}", hashmap.collissions);
+    return result;
 }
 
 const UNKNOWN: i32 = 10_000;
@@ -64,7 +64,7 @@ fn progress_bar(depth: usize, mv: Move) {
     }
 }
 
-fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, depth: usize, mut alpha: i32, mut beta: i32) -> i32 {
+fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize, mut alpha: i32, mut beta: i32) -> i32 {
     unsafe {
         NODE_COUNT += 1;
     }
@@ -82,8 +82,8 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, dept
         assert!(alpha < beta);
         let orig_alpha = alpha;
         if depth > 0 {
-            if depth >= SIZE - MAX_DEPTH && depth <= SIZE - MIN_DEPTH {
-                if let Some(&entry) = hashmap.get(&pos.hash()) {
+            if depth >= 1 {
+                if let Some(entry) = hashmap.get(pos.hash()) {
                     if entry == DRAW_OR_LOSE {
                         // oa = DRAW, beta = WIN
                         beta = beta.min(DRAW);
@@ -115,7 +115,7 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, dept
                 }
             }
         }
-        if depth >= SIZE - MAX_DEPTH && depth <= SIZE - MIN_DEPTH {
+        if depth >= 1 {
             let mut entry = alpha;
             if alpha == DRAW {
                 if orig_alpha == DRAW {
