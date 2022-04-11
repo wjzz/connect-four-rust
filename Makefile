@@ -8,4 +8,4 @@ play:
 	@cargo run --release -q -- --play
 
 solve:
-	@cargo run --release -q -- --solve
+	@/usr/bin/time -f "%M kBs of ram" cargo run --release -q -- --solve

@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::io::Write;
 use std::time::Instant;
 use thousands::Separable;
 
@@ -9,6 +10,9 @@ static mut NODE_COUNT: usize = 0;
 
 pub fn solve_iterative_deepening() {
     unsafe {
+        println!("");
+        println!("");
+
         let depth = SIZE + 1;
         let now = Instant::now();
         let result = solve(&mut ArrayPosition::new(), depth);
@@ -19,7 +23,7 @@ pub fn solve_iterative_deepening() {
         let nps = NODE_COUNT / elapsed_millisecs;
 
         println!(
-            "depth = {:2} | result = {:6} | nodes = {:12} | [elapsed: {}] [speed: {}K nps]",
+            "\ndepth = {:2} | result = {:6} | nodes = {:12} | [elapsed: {}] [speed: {}K nps]",
             depth,
             result,
             NODE_COUNT.separate_with_commas(),
@@ -30,28 +34,27 @@ pub fn solve_iterative_deepening() {
 }
 
 const MIN_DEPTH: usize = 4;
-const MAX_DEPTH: usize = 24;
+const MAX_DEPTH: usize = 20;
 
 pub fn solve(pos: &mut ArrayPosition, depth: usize) -> i32 {
     unsafe {
         NODE_COUNT = 0;
     }
     let mut hashmap = HashMap::new();
-    return solve_iter(pos, &mut hashmap, depth, -UNKNOWN, UNKNOWN);
+    return solve_iter(pos, &mut hashmap, depth, -MY_WIN, MY_WIN);
 }
 
 const UNKNOWN: i32 = 10_000;
 const MY_WIN: i32 = 10;
 
 struct Entry {
-    depth: usize,
-    flag: usize,
+    flag: i32,
     value: i32,
 }
 
-const EXACT: usize = 0;
-const LOWERBOUND: usize = 1;
-const UPPERBOUND: usize = 2;
+const EXACT: i32 = 0;
+const LOWERBOUND: i32 = 1;
+const UPPERBOUND: i32 = 2;
 
 fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, depth: usize, mut alpha: i32, mut beta: i32) -> i32 {
     unsafe {
@@ -72,18 +75,16 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, dept
         if depth > 0 {
             if depth >= SIZE - MAX_DEPTH && depth <= SIZE - MIN_DEPTH {
                 if let Some(entry) = hashmap.get(&pos.hash()) {
-                    if entry.depth >= depth {
-                        if entry.flag == EXACT {
-                            return entry.value;
-                        } else if entry.flag == LOWERBOUND {
-                            alpha = alpha.max(entry.value);
-                        } else {
-                            // upperbound
-                            beta = beta.min(entry.value);
-                        }
-                        if alpha >= beta {
-                            return entry.value;
-                        }
+                    if entry.flag == EXACT {
+                        return entry.value;
+                    } else if entry.flag == LOWERBOUND {
+                        alpha = alpha.max(entry.value);
+                    } else {
+                        // upperbound
+                        beta = beta.min(entry.value);
+                    }
+                    if alpha >= beta {
+                        return entry.value;
                     }
                 }
             }
@@ -91,11 +92,12 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, dept
             order_moves(pos, &mut moves);
             for mv in moves {
                 if depth == SIZE+1 {
-                    println!("mv = {}", mv);
+                    println!("\x1b[2A\r1st = {}\n", mv);
                 } else if depth == SIZE {
-                    println!("  mv = {}", mv);
+                    println!("\x1b[1A\r2nd = {}", mv);
                 } else if depth == SIZE-1 {
-                    println!("    mv = {}", mv);
+                    print!("\x1bm\r3rd = {}", mv);
+                    std::io::stdout().flush().unwrap();
                 }
                 pos.make_move(mv);
                 let eval = -solve_iter(pos, hashmap, depth-1, -beta, -alpha);
@@ -118,7 +120,7 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, dept
             }
 
             let value = alpha;
-            let entry = Entry { depth, value, flag };
+            let entry = Entry { value, flag };
             hashmap.insert(pos.hash(), entry);
         }
         return alpha;

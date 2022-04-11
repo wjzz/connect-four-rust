@@ -37,6 +37,9 @@
 | 5x6 | draw | 10,030,145,152 | 19m 31s | alpha-beta w/ move ordering
 | 5x6 | draw |     47,382,760 |     14s | alpha-beta w/ move ordering & hashmap
 
+| 6x6 | white win (-10) | 9,591,023,814 | 27min 20s | alpha-beta w/ move ordering & hashmap (420mb)
+| 6x6 | white win (-10) | 6,626,914,896 | 18min 44s | alpha-beta w/ move ordering & hashmap (1.6mb)
+
 ## move ordering improvements
 
 depth = 26 | result =      0 | nodes = 19,625,891   | [elapsed: 2375] [speed: 8,263K nps]
