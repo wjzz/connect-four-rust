@@ -104,11 +104,10 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, dept
                     if entry.flag == EXACT {
                         return entry.value;
                     } else if entry.flag == LOWERBOUND {
-                        assert_eq!(entry.value, DRAW);
+                        // if entry.value == DRAW_LOWERBOUND {
                         alpha = alpha.max(DRAW);
                     } else {
-                        // upperbound
-                        assert_eq!(entry.value, DRAW);
+                        // entry.value == DRAW_UPPERBOUND {
                         beta = beta.min(DRAW);
                     }
                     if alpha >= beta {
@@ -136,15 +135,17 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, dept
         }
         if depth >= SIZE - MAX_DEPTH && depth <= SIZE - MIN_DEPTH {
             let mut flag = EXACT;
+            let mut value = alpha;
             if alpha == DRAW {
                 if alpha <= orig_alpha {
                     flag = UPPERBOUND;
+                    // value = DRAW_UPPERBOUND;
                 } else if alpha >= beta {
                     flag = LOWERBOUND;
+                    // value = DRAW_LOWERBOUND;
                 }
             }
 
-            let value = alpha;
             let entry = Entry { value, flag };
             hashmap.insert(pos.hash(), entry);
         }
