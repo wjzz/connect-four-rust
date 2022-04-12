@@ -6,7 +6,7 @@ const HASHTABLE_SIZE: usize = 100_663_319;
 #[derive(Clone)]
 struct Entry {
     hash: usize,
-    value: i32,
+    value: usize,
 }
 
 pub struct Table {
@@ -14,27 +14,30 @@ pub struct Table {
     pub collissions: usize,
 }
 
+const UNKNOWN: usize = 5;
+
 impl Table {
     pub fn new() -> Table {
-        let empty = Entry { hash: 0, value: -1 };
+        let empty = Entry { hash: 0, value: UNKNOWN };
         let keys = vec![empty.clone(); HASHTABLE_SIZE];
         Table { keys, collissions: 0 }
     }
 
-    pub fn insert(self: &mut Self, hash: usize, value: i32) {
-        assert!(value.abs() <= 10);
+    pub fn insert(self: &mut Self, hash: usize, value: usize, work: usize) {
+        assert!(value <= 4);
 
         let field = &mut self.keys[hash % HASHTABLE_SIZE];
-        if field.value != -1 {
+        if field.value != UNKNOWN {
             self.collissions += 1;
         }
-        self.keys[hash % HASHTABLE_SIZE].hash = hash;
-        self.keys[hash % HASHTABLE_SIZE].value = value;
+        // let field_work = field.value >> 4;
+        field.hash = hash;
+        field.value = value;
     }
 
-    pub fn get(self: &Self, hash: usize) -> Option<i32> {
+    pub fn get(self: &Self, hash: usize) -> Option<usize> {
         let field = &self.keys[hash % HASHTABLE_SIZE];
-        if field.hash == hash && field.value != -1 {
+        if field.hash == hash && field.value != UNKNOWN {
             return Some(field.value);
         } else {
             return None;
