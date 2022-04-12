@@ -1,8 +1,8 @@
-use std::collections::HashMap;
 use std::io::Write;
 use std::time::Instant;
 use thousands::Separable;
 
+use crate::table::Table;
 use crate::types::*;
 use crate::board::ArrayPosition;
 
@@ -15,6 +15,7 @@ lazy_static! {
 static mut NODE_COUNT: usize = 0;
 
 pub fn solve_iterative_deepening() {
+
     unsafe {
         if *VERBOSE_OUTPUT {
             println!("");
@@ -45,15 +46,14 @@ pub fn solve_iterative_deepening() {
     }
 }
 
-const MIN_DEPTH: usize = 4;
-const MAX_DEPTH: usize = 18;
-
 pub fn solve(pos: &mut ArrayPosition, depth: usize) -> i32 {
     unsafe {
         NODE_COUNT = 0;
     }
-    let mut hashmap = HashMap::new();
-    return solve_iter(pos, &mut hashmap, depth, LOSS, WIN);
+    let mut hashmap = Table::new();
+    let result = solve_iter(pos, &mut hashmap, depth, LOSS, WIN);
+    println!("\ncollissions = {}", hashmap.collissions);
+    return result;
 }
 
 const DRAW: i32 = 0;
@@ -75,7 +75,7 @@ fn progress_bar(depth: usize, mv: Move) {
     }
 }
 
-fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, depth: usize, mut alpha: i32, mut beta: i32) -> i32 {
+fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize, mut alpha: i32, mut beta: i32) -> i32 {
     unsafe {
         NODE_COUNT += 1;
     }
@@ -90,14 +90,15 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, dept
                 }
         }
     } else {
+        assert!(alpha < beta);
         let orig_alpha = alpha;
         if depth > 0 {
-            if depth >= SIZE - MAX_DEPTH && depth <= SIZE - MIN_DEPTH {
-                if let Some(&entry) = hashmap.get(&pos.hash()) {
-                    if entry == DRAW_LOWERBOUND {
-                        alpha = alpha.max(DRAW);
-                    } else if entry == DRAW_UPPERBOUND {
+            if depth >= 1 {
+                if let Some(entry) = hashmap.get(pos.hash()) {
+                    if entry == DRAW_UPPERBOUND {
                         beta = beta.min(DRAW);
+                    } else if entry == DRAW_LOWERBOUND {
+                        alpha = alpha.max(DRAW);
                     } else {
                         return entry;
                     }
@@ -124,7 +125,7 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, dept
                 }
             }
 
-            if depth >= SIZE - MAX_DEPTH && depth <= SIZE - MIN_DEPTH {
+            if depth >= 1 {
                 let mut value = alpha;
                 if alpha == DRAW {
                     if alpha <= orig_alpha {
