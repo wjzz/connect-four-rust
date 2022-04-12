@@ -62,14 +62,7 @@ const LOSS: i32 = -WIN;
 const DRAW_LOWERBOUND: i32 = 5;
 const DRAW_UPPERBOUND: i32 = -DRAW_LOWERBOUND;
 
-struct Entry {
-    flag: i32,
-    value: i32,
-}
-
-const EXACT: i32 = 0;
-const LOWERBOUND: i32 = 1;
-const UPPERBOUND: i32 = 2;
+type Entry = i32;
 
 fn progress_bar(depth: usize, mv: Move) {
     if depth == SIZE+1 {
@@ -100,19 +93,16 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, dept
         let orig_alpha = alpha;
         if depth > 0 {
             if depth >= SIZE - MAX_DEPTH && depth <= SIZE - MIN_DEPTH {
-                if let Some(entry) = hashmap.get(&pos.hash()) {
-                    if entry.flag == EXACT {
-                        return entry.value;
-                    } else if entry.flag == LOWERBOUND {
-                        // if entry.value == DRAW_LOWERBOUND {
+                if let Some(&entry) = hashmap.get(&pos.hash()) {
+                    if entry == DRAW_LOWERBOUND {
                         alpha = alpha.max(DRAW);
-                    } else {
-                        assert_eq!(entry.flag, UPPERBOUND);
-                        // entry.value == DRAW_UPPERBOUND {
+                    } else if entry == DRAW_UPPERBOUND {
                         beta = beta.min(DRAW);
+                    } else {
+                        return entry;
                     }
                     if alpha >= beta {
-                        return entry.value;
+                        return DRAW;
                     }
                 }
             }
@@ -135,20 +125,16 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, dept
             }
 
             if depth >= SIZE - MAX_DEPTH && depth <= SIZE - MIN_DEPTH {
-                let mut flag = EXACT;
                 let mut value = alpha;
                 if alpha == DRAW {
                     if alpha <= orig_alpha {
-                        flag = UPPERBOUND;
-                        // value = DRAW_UPPERBOUND;
+                        value = DRAW_UPPERBOUND;
                     } else if alpha >= beta {
-                        flag = LOWERBOUND;
                         value = DRAW_LOWERBOUND;
                     }
                 }
 
-                let entry = Entry { value, flag };
-                hashmap.insert(pos.hash(), entry);
+                hashmap.insert(pos.hash(), value);
             }
         }
         return alpha;
