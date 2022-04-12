@@ -41,7 +41,7 @@ pub fn solve_iterative_deepening() {
                 nps.separate_with_commas(),
             );
         } else {
-            println!("result,{},{},{},{}", ROWS, COLS, result, NODE_COUNT);
+            println!("result,{},{},{},{},{}", ROWS, COLS, result, NODE_COUNT, elapsed_millisecs);
         }
     }
 }

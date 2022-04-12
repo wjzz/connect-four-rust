@@ -15,3 +15,6 @@ test:
 
 quiet:
 	@VERBOSE_OUTPUT=false cargo run --release -q -- --solve
+
+bench:
+	@python3 tests.py
