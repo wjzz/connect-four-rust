@@ -59,6 +59,8 @@ pub fn solve(pos: &mut ArrayPosition, depth: usize) -> i32 {
 const DRAW: i32 = 0;
 const WIN: i32 = 10;
 const LOSS: i32 = -WIN;
+const DRAW_LOWERBOUND: i32 = 5;
+const DRAW_UPPERBOUND: i32 = -DRAW_LOWERBOUND;
 
 struct Entry {
     flag: i32,
@@ -102,10 +104,12 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, dept
                     if entry.flag == EXACT {
                         return entry.value;
                     } else if entry.flag == LOWERBOUND {
-                        alpha = alpha.max(entry.value);
+                        assert_eq!(entry.value, DRAW);
+                        alpha = alpha.max(DRAW);
                     } else {
                         // upperbound
-                        beta = beta.min(entry.value);
+                        assert_eq!(entry.value, DRAW);
+                        beta = beta.min(DRAW);
                     }
                     if alpha >= beta {
                         return entry.value;
