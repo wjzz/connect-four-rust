@@ -59,6 +59,10 @@ depth = 25 | result =    -10 | nodes = 6,404,566    | [elapsed: 1574] [speed: 4,
 | 6x6 | white win | 1,088,699,620 |  7min 00s | alpha-beta w/ move ordering & hashmap (20gb)
 | 6x6 | white win | 1,316,410,640 |  6min 40s | alpha-beta w/ move ordering & my hash & no flag (1.5gb)
 
+| 7x6 | black win | 21,298,838,143 | 1h 56 min | alpha-beta w/ move ordering & hashmap (32gb)
+
+depth = 43 | result =     10 | nodes =  | [elapsed: 6957] [speed: 3,061K nps]
+
 | 4x6 | white win | 5,358,177 | 1.5s | alpha-beta w/ move ordering & hashmap (20gb)
 
 | 4x7 | draw | 65,901,814 | 20s | alpha-beta w/ move ordering & hashmap (20gb)
