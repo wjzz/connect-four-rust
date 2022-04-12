@@ -142,7 +142,7 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, dept
                     // value = DRAW_UPPERBOUND;
                 } else if alpha >= beta {
                     flag = LOWERBOUND;
-                    // value = DRAW_LOWERBOUND;
+                    value = DRAW_LOWERBOUND;
                 }
             }
 
