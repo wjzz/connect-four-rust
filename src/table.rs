@@ -32,7 +32,7 @@ const UNKNOWN: usize = 5;
 
 // TODO: we can encode the hash value as well?
 // value:
-// 5: big work
+// 6: big work
 // 3: big value
 // 3: lower value
 
@@ -45,7 +45,6 @@ impl Table {
 
     pub fn insert(self: &mut Self, hash: usize, value: usize, work: usize) {
         assert!(value <= 4);
-        assert!(work <= 31);
 
         self.inserts += 1;
         let field = &mut self.keys[hash % HASHTABLE_SIZE];
