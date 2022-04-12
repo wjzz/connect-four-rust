@@ -66,7 +66,6 @@ def test_connect_four(rows, cols, expected, nodes):
     connect_four(rows, cols, expected, nodes)
 
 if __name__ == "__main__":
-    print("Benchmarking all sizes")
     SIZES = [
         (4,4),
         (5,4),

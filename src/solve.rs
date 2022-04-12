@@ -31,10 +31,18 @@ pub fn solve_iterative_deepening() {
         }
         let nps = NODE_COUNT / elapsed_millisecs;
 
+        let result = match result {
+            0 => -10, // white win
+            1 => 0,   // draw
+            2 => 10,  // black win
+            _ => { panic!("wrong result"); }
+        };
+
         if *VERBOSE_OUTPUT {
             println!(
-                "\ndepth = {:2} | result = {:6} | nodes = {:12} | [elapsed: {}] [speed: {}K nps]",
-                depth,
+                "\n{} x {} | result = {:6} | nodes = {:12} | [elapsed: {}] [speed: {}K nps]",
+                ROWS,
+                COLS,
                 result,
                 NODE_COUNT.separate_with_commas(),
                 elapsed_millisecs,
@@ -46,23 +54,28 @@ pub fn solve_iterative_deepening() {
     }
 }
 
-pub fn solve(pos: &mut ArrayPosition, depth: usize) -> i32 {
+pub fn solve(pos: &mut ArrayPosition, depth: usize) -> usize {
     unsafe {
         NODE_COUNT = 0;
     }
     let mut hashmap = Table::new();
     let result = solve_iter(pos, &mut hashmap, depth, LOSS, WIN);
-    println!("\ncollissions = {}", hashmap.collissions);
+    println!("\ncollissions = {}", hashmap.collissions.separate_with_commas());
+    println!("inserts = {}", hashmap.inserts.separate_with_commas());
+    println!("uppers = {}", hashmap.uppers.separate_with_commas());
+    println!("lowers = {}", hashmap.lowers.separate_with_commas());
+    println!("gets = {}", hashmap.gets.separate_with_commas());
+    println!("get_misses = {}", hashmap.get_misses.separate_with_commas());
     return result;
 }
 
-const DRAW: i32 = 0;
-const WIN: i32 = 10;
-const LOSS: i32 = -WIN;
-const DRAW_LOWERBOUND: i32 = 5;
-const DRAW_UPPERBOUND: i32 = -DRAW_LOWERBOUND;
+const LOSS: usize = 0;
+const DRAW: usize = 1;
+const WIN: usize = 2;
+const DRAW_LOWERBOUND: usize = 3;
+const DRAW_UPPERBOUND: usize = 4;
 
-type Entry = i32;
+type Entry = usize;
 
 fn progress_bar(depth: usize, mv: Move) {
     if depth == SIZE+1 {
@@ -75,25 +88,33 @@ fn progress_bar(depth: usize, mv: Move) {
     }
 }
 
-fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize, mut alpha: i32, mut beta: i32) -> i32 {
-    unsafe {
-        NODE_COUNT += 1;
-    }
-    if let Some(result) = pos.result() {
-        match result {
+impl GameResult {
+    pub fn to_eval(self, to_play: Player) -> usize {
+        match self {
             GameResult::Draw => return DRAW,
             GameResult::Win(player) =>
-                if player == pos.to_play {
+                if player == to_play {
                     return WIN;
                 } else {
                     return LOSS;
                 }
         }
-    } else {
-        assert!(alpha < beta);
-        let orig_alpha = alpha;
-        if depth > 0 {
-            if depth >= 1 {
+    }
+}
+
+const MIN_DEPTH: usize = 1;
+
+fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize, mut alpha: usize, mut beta: usize) -> usize {
+    unsafe {
+        NODE_COUNT += 1;
+
+        if let Some(result) = pos.result() {
+            return result.to_eval(pos.to_play);
+        } else {
+            let before = NODE_COUNT;
+
+            let orig_alpha = alpha;
+            if depth >= MIN_DEPTH {
                 if let Some(entry) = hashmap.get(pos.hash()) {
                     if entry == DRAW_UPPERBOUND {
                         beta = beta.min(DRAW);
@@ -114,7 +135,7 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize, mut al
                     progress_bar(depth, mv);
                 }
                 pos.make_move(mv);
-                let eval = -solve_iter(pos, hashmap, depth-1, -beta, -alpha);
+                let eval = 2 - solve_iter(pos, hashmap, depth-1, 2-beta, 2-alpha);
                 pos.unmake_move(mv);
 
                 if eval > alpha {
@@ -125,7 +146,10 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize, mut al
                 }
             }
 
-            if depth >= 1 {
+            if depth >= MIN_DEPTH {
+                let nodes = NODE_COUNT - before;
+                let work: usize = 64 - (nodes.leading_zeros() as usize);
+
                 let mut value = alpha;
                 if alpha == DRAW {
                     if alpha <= orig_alpha {
@@ -135,10 +159,10 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize, mut al
                     }
                 }
 
-                hashmap.insert(pos.hash(), value);
+                hashmap.insert(pos.hash(), value, work);
             }
+            return alpha;
         }
-        return alpha;
     }
 }
 
