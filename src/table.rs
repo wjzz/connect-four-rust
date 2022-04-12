@@ -30,9 +30,12 @@ impl Table {
         if field.value != UNKNOWN {
             self.collissions += 1;
         }
-        // let field_work = field.value >> 3;
-        field.hash = hash;
-        field.value = value | (work << 3);
+
+        let field_work = field.value >> 3;
+        if work > field_work {
+            field.hash = hash;
+            field.value = value | (work << 3);
+        }
     }
 
     pub fn get(self: &Self, hash: usize) -> Option<usize> {
