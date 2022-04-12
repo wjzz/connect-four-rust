@@ -30,15 +30,15 @@ impl Table {
         if field.value != UNKNOWN {
             self.collissions += 1;
         }
-        // let field_work = field.value >> 4;
+        // let field_work = field.value >> 3;
         field.hash = hash;
-        field.value = value;
+        field.value = value | (work << 3);
     }
 
     pub fn get(self: &Self, hash: usize) -> Option<usize> {
         let field = &self.keys[hash % HASHTABLE_SIZE];
         if field.hash == hash && field.value != UNKNOWN {
-            return Some(field.value);
+            return Some(field.value & 0b111);
         } else {
             return None;
         }
