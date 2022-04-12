@@ -1,10 +1,9 @@
 // https://planetmath.org/goodhashtableprimes
 
-const HASHTABLE_SIZE: usize = 2_147_483_647;  // 32 gigs
+// const HASHTABLE_SIZE: usize = 2_147_483_647;  // 32 gigs
 // const HASHTABLE_SIZE: usize = 1_610_612_741;  // 25 gigs
 
-// const HASHTABLE_SIZE: usize = 2_147_483_647;
-// const HASHTABLE_SIZE: usize = 100_663_319;
+const HASHTABLE_SIZE: usize = 100_663_319; // 1.5 gigs
 // const HASHTABLE_SIZE: usize = 50_331_653;
 // const HASHTABLE_SIZE: usize = 25_165_843;
 // const HASHTABLE_SIZE: usize = 12_582_917;

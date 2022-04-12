@@ -1,5 +1,29 @@
 # 6x6
 
+Using an extremely big trans. table seems to be not so great. We probably keep way to many old nodes and maybe it's just slower to access memory that is distributed among many memory sticks (IDK).
+
+## SIZE = 2_147_483_647 (PC)
+
+collissions = 34,553,456
+inserts = 673,735,069
+uppers = 577,482,012
+lowers = 96,253,057
+gets = 866,211,941
+get_misses = 628,020,685
+
+time = 369s (6min 9s)
+
+## SIZE = 100_663_319 (PC)
+
+collissions = 437,998,984
+inserts = 678,943,606
+uppers = 211,765,607
+lowers = 467,177,999
+gets = 854,389,475
+get_misses = 657,202,110
+
+time = 340s (5min 40s)
+
 ## SIZE = 100_663_319
 
 collissions = 438,010,731
