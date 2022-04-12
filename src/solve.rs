@@ -53,11 +53,12 @@ pub fn solve(pos: &mut ArrayPosition, depth: usize) -> i32 {
         NODE_COUNT = 0;
     }
     let mut hashmap = HashMap::new();
-    return solve_iter(pos, &mut hashmap, depth, -MY_WIN, MY_WIN);
+    return solve_iter(pos, &mut hashmap, depth, LOSS, WIN);
 }
 
-const UNKNOWN: i32 = 10_000;
-const MY_WIN: i32 = 10;
+const DRAW: i32 = 0;
+const WIN: i32 = 10;
+const LOSS: i32 = -WIN;
 
 struct Entry {
     flag: i32,
@@ -85,12 +86,12 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, dept
     }
     if let Some(result) = pos.result() {
         match result {
-            GameResult::Draw => return 0,
+            GameResult::Draw => return DRAW,
             GameResult::Win(player) =>
                 if player == pos.to_play {
-                    return MY_WIN;
+                    return WIN;
                 } else {
-                    return -MY_WIN;
+                    return LOSS;
                 }
         }
     } else {
@@ -131,10 +132,12 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, dept
         }
         if depth >= SIZE - MAX_DEPTH && depth <= SIZE - MIN_DEPTH {
             let mut flag = EXACT;
-            if alpha <= orig_alpha {
-                flag = UPPERBOUND;
-            } else if alpha >= beta {
-                flag = LOWERBOUND;
+            if alpha == DRAW {
+                if alpha <= orig_alpha {
+                    flag = UPPERBOUND;
+                } else if alpha >= beta {
+                    flag = LOWERBOUND;
+                }
             }
 
             let value = alpha;
