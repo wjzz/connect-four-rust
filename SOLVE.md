@@ -6,6 +6,20 @@
 
 # results
 
+| 4x4 |   0 |
+| 5x5 |   0 |
+| 4x5 |   0 |
+| 5x5 |   0 |
+| 6x5 |   0 |
+| 5x6 |   0 |
+| 6x6 | -10 |
+| 4x6 | -10 |
+| 4x7 |   0 |
+
+depth = 25 | result =    -10 | nodes = 6,404,566    | [elapsed: 1574] [speed: 4,068K nps]
+
+# benchmarks
+
 | size (row x cols) | result | nodes | time | notes
 |-|-|-|-|-|
 | 4x4 | draw | 131,060,741 | 5.6s   | simple minimax

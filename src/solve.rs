@@ -6,12 +6,20 @@ use thousands::Separable;
 use crate::types::*;
 use crate::board::ArrayPosition;
 
+const VERBOSE_OUTPUT_SETTING: Option<&'static str> = option_env!("VERBOSE_OUTPUT");
+
+lazy_static! {
+    static ref VERBOSE_OUTPUT: bool = VERBOSE_OUTPUT_SETTING.map(|s| s.parse().unwrap()).unwrap_or(true);
+}
+
 static mut NODE_COUNT: usize = 0;
 
 pub fn solve_iterative_deepening() {
     unsafe {
-        println!("");
-        println!("");
+        if *VERBOSE_OUTPUT {
+            println!("");
+            println!("");
+        }
 
         let depth = SIZE + 1;
         let now = Instant::now();
@@ -22,14 +30,18 @@ pub fn solve_iterative_deepening() {
         }
         let nps = NODE_COUNT / elapsed_millisecs;
 
-        println!(
-            "\ndepth = {:2} | result = {:6} | nodes = {:12} | [elapsed: {}] [speed: {}K nps]",
-            depth,
-            result,
-            NODE_COUNT.separate_with_commas(),
-            elapsed_millisecs,
-            nps.separate_with_commas(),
-        );
+        if *VERBOSE_OUTPUT {
+            println!(
+                "\ndepth = {:2} | result = {:6} | nodes = {:12} | [elapsed: {}] [speed: {}K nps]",
+                depth,
+                result,
+                NODE_COUNT.separate_with_commas(),
+                elapsed_millisecs,
+                nps.separate_with_commas(),
+            );
+        } else {
+            println!("result,{},{},{},{}", ROWS, COLS, result, NODE_COUNT);
+        }
     }
 }
 
@@ -55,6 +67,17 @@ struct Entry {
 const EXACT: i32 = 0;
 const LOWERBOUND: i32 = 1;
 const UPPERBOUND: i32 = 2;
+
+fn progress_bar(depth: usize, mv: Move) {
+    if depth == SIZE+1 {
+        println!("\x1b[2A\r1st = {}\n", mv);
+    } else if depth == SIZE {
+        println!("\x1b[1A\r2nd = {}", mv);
+    } else if depth == SIZE-1 {
+        print!("\x1bm\r3rd = {}", mv);
+        std::io::stdout().flush().unwrap();
+    }
+}
 
 fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, depth: usize, mut alpha: i32, mut beta: i32) -> i32 {
     unsafe {
@@ -91,13 +114,8 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut HashMap<usize, Entry>, dept
             let mut moves = pos.moves();
             order_moves(pos, &mut moves);
             for mv in moves {
-                if depth == SIZE+1 {
-                    println!("\x1b[2A\r1st = {}\n", mv);
-                } else if depth == SIZE {
-                    println!("\x1b[1A\r2nd = {}", mv);
-                } else if depth == SIZE-1 {
-                    print!("\x1bm\r3rd = {}", mv);
-                    std::io::stdout().flush().unwrap();
+                if *VERBOSE_OUTPUT {
+                    progress_bar(depth, mv);
                 }
                 pos.make_move(mv);
                 let eval = -solve_iter(pos, hashmap, depth-1, -beta, -alpha);
