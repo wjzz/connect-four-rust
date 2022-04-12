@@ -40,8 +40,9 @@ pub fn solve_iterative_deepening() {
 
         if *VERBOSE_OUTPUT {
             println!(
-                "\ndepth = {:2} | result = {:6} | nodes = {:12} | [elapsed: {}] [speed: {}K nps]",
-                depth,
+                "\n{} x {} | result = {:6} | nodes = {:12} | [elapsed: {}] [speed: {}K nps]",
+                ROWS,
+                COLS,
                 result,
                 NODE_COUNT.separate_with_commas(),
                 elapsed_millisecs,
@@ -59,7 +60,12 @@ pub fn solve(pos: &mut ArrayPosition, depth: usize) -> usize {
     }
     let mut hashmap = Table::new();
     let result = solve_iter(pos, &mut hashmap, depth, LOSS, WIN);
-    println!("\ncollissions = {}", hashmap.collissions);
+    println!("\ncollissions = {}", hashmap.collissions.separate_with_commas());
+    println!("inserts = {}", hashmap.inserts.separate_with_commas());
+    println!("uppers = {}", hashmap.uppers.separate_with_commas());
+    println!("lowers = {}", hashmap.lowers.separate_with_commas());
+    println!("gets = {}", hashmap.gets.separate_with_commas());
+    println!("get_misses = {}", hashmap.get_misses.separate_with_commas());
     return result;
 }
 
@@ -96,6 +102,8 @@ impl GameResult {
     }
 }
 
+const MIN_DEPTH: usize = 1;
+
 fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize, mut alpha: usize, mut beta: usize) -> usize {
     unsafe {
         NODE_COUNT += 1;
@@ -106,7 +114,7 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize, mut al
             let before = NODE_COUNT;
 
             let orig_alpha = alpha;
-            if depth >= 1 {
+            if depth >= MIN_DEPTH {
                 if let Some(entry) = hashmap.get(pos.hash()) {
                     if entry == DRAW_UPPERBOUND {
                         beta = beta.min(DRAW);
@@ -138,8 +146,9 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize, mut al
                 }
             }
 
-            if depth >= 1 {
-                let work = NODE_COUNT - before;
+            if depth >= MIN_DEPTH {
+                let nodes = NODE_COUNT - before;
+                let work: usize = 64 - (nodes.leading_zeros() as usize);
 
                 let mut value = alpha;
                 if alpha == DRAW {
