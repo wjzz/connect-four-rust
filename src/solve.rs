@@ -6,13 +6,21 @@ use crate::table::Table;
 use crate::types::*;
 use crate::board::ArrayPosition;
 
+const VERBOSE_OUTPUT_SETTING: Option<&'static str> = option_env!("VERBOSE_OUTPUT");
+
+lazy_static! {
+    static ref VERBOSE_OUTPUT: bool = VERBOSE_OUTPUT_SETTING.map(|s| s.parse().unwrap()).unwrap_or(true);
+}
+
 static mut NODE_COUNT: usize = 0;
 
 pub fn solve_iterative_deepening() {
 
     unsafe {
-        println!("");
-        println!("");
+        if *VERBOSE_OUTPUT {
+            println!("");
+            println!("");
+        }
 
         let depth = SIZE + 1;
         let now = Instant::now();
@@ -23,14 +31,18 @@ pub fn solve_iterative_deepening() {
         }
         let nps = NODE_COUNT / elapsed_millisecs;
 
-        println!(
-            "\ndepth = {:2} | result = {:6} | nodes = {:12} | [elapsed: {}] [speed: {}K nps]",
-            depth,
-            result,
-            NODE_COUNT.separate_with_commas(),
-            elapsed_millisecs,
-            nps.separate_with_commas(),
-        );
+        if *VERBOSE_OUTPUT {
+            println!(
+                "\ndepth = {:2} | result = {:6} | nodes = {:12} | [elapsed: {}] [speed: {}K nps]",
+                depth,
+                result,
+                NODE_COUNT.separate_with_commas(),
+                elapsed_millisecs,
+                nps.separate_with_commas(),
+            );
+        } else {
+            println!("result,{},{},{},{},{}", ROWS, COLS, result, NODE_COUNT, elapsed_millisecs);
+        }
     }
 }
 
@@ -39,17 +51,16 @@ pub fn solve(pos: &mut ArrayPosition, depth: usize) -> i32 {
         NODE_COUNT = 0;
     }
     let mut hashmap = Table::new();
-    let result = solve_iter(pos, &mut hashmap, depth, -WIN, WIN);
+    let result = solve_iter(pos, &mut hashmap, depth, LOSS, WIN);
     println!("\ncollissions = {}", hashmap.collissions);
     return result;
 }
 
-const UNKNOWN: i32 = 10_000;
 const DRAW: i32 = 0;
 const WIN: i32 = 10;
 const LOSS: i32 = -WIN;
-const DRAW_OR_WIN: i32 = 5;
-const DRAW_OR_LOSE: i32 = -DRAW_OR_WIN;
+const DRAW_LOWERBOUND: i32 = 5;
+const DRAW_UPPERBOUND: i32 = -DRAW_LOWERBOUND;
 
 type Entry = i32;
 
@@ -75,7 +86,7 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize, mut al
                 if player == pos.to_play {
                     return WIN;
                 } else {
-                    return -WIN;
+                    return LOSS;
                 }
         }
     } else {
@@ -84,11 +95,9 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize, mut al
         if depth > 0 {
             if depth >= 1 {
                 if let Some(entry) = hashmap.get(pos.hash()) {
-                    if entry == DRAW_OR_LOSE {
-                        // oa = DRAW, beta = WIN
+                    if entry == DRAW_UPPERBOUND {
                         beta = beta.min(DRAW);
-                    } else if entry == DRAW_OR_WIN {
-                        // oa = LOSS, beta = DRAW
+                    } else if entry == DRAW_LOWERBOUND {
                         alpha = alpha.max(DRAW);
                     } else {
                         return entry;
@@ -101,8 +110,9 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize, mut al
             let mut moves = pos.moves();
             order_moves(pos, &mut moves);
             for mv in moves {
-                progress_bar(depth, mv);
-
+                if *VERBOSE_OUTPUT {
+                    progress_bar(depth, mv);
+                }
                 pos.make_move(mv);
                 let eval = -solve_iter(pos, hashmap, depth-1, -beta, -alpha);
                 pos.unmake_move(mv);
@@ -114,17 +124,19 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize, mut al
                     }
                 }
             }
-        }
-        if depth >= 1 {
-            let mut entry = alpha;
-            if alpha == DRAW {
-                if orig_alpha == DRAW {
-                    entry = DRAW_OR_LOSE;
-                } else if beta == DRAW {
-                    alpha = DRAW_OR_WIN;
+
+            if depth >= 1 {
+                let mut value = alpha;
+                if alpha == DRAW {
+                    if alpha <= orig_alpha {
+                        value = DRAW_UPPERBOUND;
+                    } else if alpha >= beta {
+                        value = DRAW_LOWERBOUND;
+                    }
                 }
+
+                hashmap.insert(pos.hash(), value);
             }
-            hashmap.insert(pos.hash(), entry);
         }
         return alpha;
     }

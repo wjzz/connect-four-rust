@@ -6,6 +6,20 @@
 
 # results
 
+| 4x4 |   0 |
+| 5x5 |   0 |
+| 4x5 |   0 |
+| 5x5 |   0 |
+| 6x5 |   0 |
+| 5x6 |   0 |
+| 6x6 | -10 |
+| 4x6 | -10 |
+| 4x7 |   0 |
+
+depth = 25 | result =    -10 | nodes = 6,404,566    | [elapsed: 1574] [speed: 4,068K nps]
+
+# benchmarks
+
 | size (row x cols) | result | nodes | time | notes
 |-|-|-|-|-|
 | 4x4 | draw | 131,060,741 | 5.6s   | simple minimax
@@ -42,7 +56,8 @@
 
 | 6x6 | white win | 9,591,023,814 | 27min 20s | alpha-beta w/ move ordering & hashmap (420mb)
 | 6x6 | white win | 6,626,914,896 | 18min 44s | alpha-beta w/ move ordering & hashmap (1.6gb)
-| 6x6 | white win | 1,088,699,620 |   7min 0s | alpha-beta w/ move ordering & hashmap (20gb)
+| 6x6 | white win | 1,088,699,620 |  7min 00s | alpha-beta w/ move ordering & hashmap (20gb)
+| 6x6 | white win | 1,316,410,640 |  6min 40s | alpha-beta w/ move ordering & my hash & no flag (1.5gb)
 
 | 4x6 | white win | 5,358,177 | 1.5s | alpha-beta w/ move ordering & hashmap (20gb)
 
