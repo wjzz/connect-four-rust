@@ -51,6 +51,24 @@ impl Position for ArrayPosition {
         self.hash
     }
 
+    fn symm_hash(self: &Self) -> usize {
+        unsafe {
+            let mut hash = 0;
+            for row in 0..ROWS {
+                for col in 0..COLS {
+                    let index = rowcol2index(row, col);
+                    let piece = self.board[index];
+                    if piece != Piece::Empty {
+                        let player = piece as usize - 1;
+                        let sym_index = rowcol2index(row, COLS-1-col);
+                        hash ^= ZOBRIST[player][sym_index];
+                    }
+                }
+            }
+            hash
+        }
+    }
+
     fn duplicate(self: &Self) -> ArrayPosition {
         let board = self.board.clone();
         let counts = self.counts.clone();
@@ -121,11 +139,11 @@ impl Position for ArrayPosition {
         let index = rowcol2index(row, mv);
         self.board[index] = Piece::from_player(self.to_play);
         self.counts[mv] += 1;
-        self.to_play = self.to_play.other();
         self.move_count += 1;
         unsafe {
             self.hash ^= ZOBRIST[self.to_play as usize][index];
         }
+        self.to_play = self.to_play.other();
     }
 
     fn unmake_move(self: &mut Self, mv: Move) {
@@ -135,10 +153,10 @@ impl Position for ArrayPosition {
         let row = self.counts[mv];
         let index = rowcol2index(row, mv);
         self.board[index] = Piece::Empty;
+        self.to_play = self.to_play.other();
         unsafe {
             self.hash ^= ZOBRIST[self.to_play as usize][index];
         }
-        self.to_play = self.to_play.other();
         self.move_count -= 1;
     }
 

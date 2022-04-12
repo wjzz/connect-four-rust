@@ -17,6 +17,7 @@ pub trait Position {
     fn fast_result(self: &Self, mv: Move) -> Option<GameResult>;
     fn move_count(self: &Self) -> usize;
     fn hash(self: &Self) -> usize;
+    fn symm_hash(self: &Self) -> usize; /* hash of the symmetric image (y axis) */
 
     fn is_finished(self: &Self) -> bool {
         self.result().is_some()

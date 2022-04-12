@@ -104,6 +104,21 @@ impl GameResult {
 
 const MIN_DEPTH: usize = 1;
 
+const SYMMETRY_CUTOFF: usize = 10;
+
+fn lookup_table(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize) -> Option<usize> {
+    match hashmap.get(pos.hash()) {
+        Some(result) => Some(result),
+        None => {
+            if SIZE - depth <= SYMMETRY_CUTOFF {
+                hashmap.get(pos.symm_hash())
+            } else {
+                None
+            }
+        }
+    }
+}
+
 fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize, mut alpha: usize, mut beta: usize) -> usize {
     unsafe {
         NODE_COUNT += 1;
@@ -115,7 +130,7 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize, mut al
 
             let orig_alpha = alpha;
             if depth >= MIN_DEPTH {
-                if let Some(entry) = hashmap.get(pos.hash()) {
+                if let Some(entry) = lookup_table(pos, hashmap, depth) {
                     if entry == DRAW_UPPERBOUND {
                         beta = beta.min(DRAW);
                     } else if entry == DRAW_LOWERBOUND {
@@ -127,7 +142,7 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize, mut al
                         return DRAW;
                     }
                 }
-                }
+            }
             let mut moves = pos.moves();
             order_moves(pos, &mut moves);
             for mv in moves {
