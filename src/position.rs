@@ -19,6 +19,8 @@ pub trait Position {
     fn hash(self: &Self) -> usize;
     fn symm_hash(self: &Self) -> usize; /* hash of the symmetric image (y axis) */
 
+    fn get_lines_count(self: &Self, mv: Move) -> i32;
+
     fn is_finished(self: &Self) -> bool {
         self.result().is_some()
     }
@@ -58,30 +60,5 @@ pub trait Position {
                 return result;
             }
         }
-
-        // if self.result().is_none() {
-        //     if depth == 1 {
-        //         return self.move_count();
-        //     } else {
-        //         if depth >= MIN_DEPTH && depth <= MAX_DEPTH {
-        //             if let Some(result) = hashmap.get(&self.hash()) {
-        //                 return *result;
-        //             }
-        //         }
-        //         let moves = self.moves();
-        //         let mut result = 0;
-        //         for mv in moves {
-        //             self.make_move(mv);
-        //             result += self.perft_iter(depth - 1, hashmap);
-        //             self.unmake_move(mv);
-        //         }
-        //         if depth >= MIN_DEPTH && depth <= MAX_DEPTH {
-        //             hashmap.insert(self.hash(), result);
-        //         }
-        //         return result;
-        //     }
-        // } else {
-        //     return 0;
-        // }
     }
 }

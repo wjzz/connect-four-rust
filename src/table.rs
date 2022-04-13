@@ -1,3 +1,5 @@
+use thousands::Separable;
+
 // https://planetmath.org/goodhashtableprimes
 
 // const HASHTABLE_SIZE: usize = 2_147_483_647;  // 32 gigs
@@ -81,5 +83,14 @@ impl Table {
         }
         self.get_misses += 1;
         return None;
+    }
+
+    pub fn print_stats(self: &Self) {
+        println!("\ncollissions = {}", self.collissions.separate_with_commas());
+        println!("inserts = {}", self.inserts.separate_with_commas());
+        println!("uppers = {}", self.uppers.separate_with_commas());
+        println!("lowers = {}", self.lowers.separate_with_commas());
+        println!("gets = {}", self.gets.separate_with_commas());
+        println!("get_misses = {}", self.get_misses.separate_with_commas());
     }
 }

@@ -69,6 +69,33 @@ impl Position for ArrayPosition {
         }
     }
 
+    fn get_lines_count(self: &ArrayPosition, mv: Move) -> i32 {
+        let index = rowcol2index(self.counts[mv], mv);
+        let mut count = 0;
+        let pp = Piece::from_player(self.to_play);
+        unsafe {
+            for line in &crate::board::LINES_BY_INDEX[index] {
+                let mut line_count = 0;
+                for i in line {
+                    if self.board[*i] == pp {
+                        line_count += 1;
+                    } else if self.board[*i] != Piece::Empty {
+                        line_count -= 1;
+                    }
+                }
+                // sure win
+                if line_count == 3 {
+                    count += 10_000;
+                } else if line_count == 2 {
+                    count += 100;
+                } else {
+                    count += line_count.max(0);
+                }
+            }
+        }
+        return -count;
+    }
+
     fn duplicate(self: &Self) -> ArrayPosition {
         let board = self.board.clone();
         let counts = self.counts.clone();

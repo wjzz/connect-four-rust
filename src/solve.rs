@@ -4,7 +4,7 @@ use thousands::Separable;
 
 use crate::table::Table;
 use crate::types::*;
-use crate::board::ArrayPosition;
+use crate::position::Position;
 
 const VERBOSE_OUTPUT_SETTING: Option<&'static str> = option_env!("VERBOSE_OUTPUT");
 
@@ -14,7 +14,30 @@ lazy_static! {
 
 static mut NODE_COUNT: usize = 0;
 
-pub fn solve_iterative_deepening() {
+const MIN_DEPTH: usize = 1;
+const SYMMETRY_CUTOFF: usize = 10;
+
+const LOSS: usize = 0;
+const DRAW: usize = 1;
+const WIN: usize = 2;
+const DRAW_LOWERBOUND: usize = 3;
+const DRAW_UPPERBOUND: usize = 4;
+
+impl GameResult {
+    pub fn to_eval(self, to_play: Player) -> usize {
+        match self {
+            GameResult::Draw => return DRAW,
+            GameResult::Win(player) =>
+                if player == to_play {
+                    return WIN;
+                } else {
+                    return LOSS;
+                }
+        }
+    }
+}
+
+pub fn solve_game<P:Position>() {
 
     unsafe {
         if *VERBOSE_OUTPUT {
@@ -23,8 +46,10 @@ pub fn solve_iterative_deepening() {
         }
 
         let depth = SIZE + 1;
+
         let now = Instant::now();
-        let result = solve(&mut ArrayPosition::new(), depth);
+        let result = solve_top(&mut P::new(), depth);
+
         let mut elapsed_millisecs = now.elapsed().as_millis() as usize;
         if elapsed_millisecs == 0 {
             elapsed_millisecs = 1;
@@ -54,59 +79,18 @@ pub fn solve_iterative_deepening() {
     }
 }
 
-pub fn solve(pos: &mut ArrayPosition, depth: usize) -> usize {
+pub fn solve_top<P: Position>(pos: &mut P, depth: usize) -> usize {
     unsafe {
         NODE_COUNT = 0;
     }
     let mut hashmap = Table::new();
     let result = solve_iter(pos, &mut hashmap, depth, LOSS, WIN);
-    println!("\ncollissions = {}", hashmap.collissions.separate_with_commas());
-    println!("inserts = {}", hashmap.inserts.separate_with_commas());
-    println!("uppers = {}", hashmap.uppers.separate_with_commas());
-    println!("lowers = {}", hashmap.lowers.separate_with_commas());
-    println!("gets = {}", hashmap.gets.separate_with_commas());
-    println!("get_misses = {}", hashmap.get_misses.separate_with_commas());
+    hashmap.print_stats();
+
     return result;
 }
 
-const LOSS: usize = 0;
-const DRAW: usize = 1;
-const WIN: usize = 2;
-const DRAW_LOWERBOUND: usize = 3;
-const DRAW_UPPERBOUND: usize = 4;
-
-type Entry = usize;
-
-fn progress_bar(depth: usize, mv: Move) {
-    if depth == SIZE+1 {
-        println!("\x1b[2A\r1st = {}\n", mv);
-    } else if depth == SIZE {
-        println!("\x1b[1A\r2nd = {}", mv);
-    } else if depth == SIZE-1 {
-        print!("\x1bm\r3rd = {}", mv);
-        std::io::stdout().flush().unwrap();
-    }
-}
-
-impl GameResult {
-    pub fn to_eval(self, to_play: Player) -> usize {
-        match self {
-            GameResult::Draw => return DRAW,
-            GameResult::Win(player) =>
-                if player == to_play {
-                    return WIN;
-                } else {
-                    return LOSS;
-                }
-        }
-    }
-}
-
-const MIN_DEPTH: usize = 1;
-
-const SYMMETRY_CUTOFF: usize = 10;
-
-fn lookup_table(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize) -> Option<usize> {
+fn lookup_table<P:Position>(pos: &mut P, hashmap: &mut Table, depth: usize) -> Option<usize> {
     match hashmap.get(pos.hash()) {
         Some(result) => Some(result),
         None => {
@@ -119,12 +103,12 @@ fn lookup_table(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize) -> O
     }
 }
 
-fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize, mut alpha: usize, mut beta: usize) -> usize {
+fn solve_iter<P: Position>(pos: &mut P, hashmap: &mut Table, depth: usize, mut alpha: usize, mut beta: usize) -> usize {
     unsafe {
         NODE_COUNT += 1;
 
         if let Some(result) = pos.result() {
-            return result.to_eval(pos.to_play);
+            return result.to_eval(pos.current_player());
         } else {
             let before = NODE_COUNT;
 
@@ -181,33 +165,17 @@ fn solve_iter(pos: &mut ArrayPosition, hashmap: &mut Table, depth: usize, mut al
     }
 }
 
-fn get_lines_count(pos: &ArrayPosition, mv: Move) -> i32 {
-    let index = rowcol2index(pos.counts[mv], mv);
-    let mut count = 0;
-    let pp = Piece::from_player(pos.to_play);
-    unsafe {
-        for line in &crate::board::LINES_BY_INDEX[index] {
-            let mut line_count = 0;
-            for i in line {
-                if pos.board[*i] == pp {
-                    line_count += 1;
-                } else if pos.board[*i] != Piece::Empty {
-                    line_count -= 1;
-                }
-            }
-            // sure win
-            if line_count == 3 {
-                count += 10_000;
-            } else if line_count == 2 {
-                count += 100;
-            } else {
-                count += line_count.max(0);
-            }
-        }
-    }
-    return -count;
+fn order_moves<P: Position>(pos: &P, moves: &mut Vec<Move>) {
+    moves.sort_by_cached_key(|mv| pos.get_lines_count(*mv));
 }
 
-fn order_moves(pos: &ArrayPosition, moves: &mut Vec<Move>) {
-    moves.sort_by_cached_key(|mv| get_lines_count(pos, *mv));
+fn progress_bar(depth: usize, mv: Move) {
+    if depth == SIZE+1 {
+        println!("\x1b[2A\r1st = {}\n", mv);
+    } else if depth == SIZE {
+        println!("\x1b[1A\r2nd = {}", mv);
+    } else if depth == SIZE-1 {
+        print!("\x1bm\r3rd = {}", mv);
+        std::io::stdout().flush().unwrap();
+    }
 }

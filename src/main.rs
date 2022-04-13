@@ -51,7 +51,7 @@ fn main() {
             play::play();
         }
         "--solve" => {
-            solve::solve_iterative_deepening();
+            solve::solve_game::<ArrayPosition>();
         }
         _ => {
             show_usage_and_exit();
