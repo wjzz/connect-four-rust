@@ -18,3 +18,7 @@ quiet:
 
 bench:
 	@python3 tests.py
+
+profile:
+	@valgrind --tool=callgrind target/release/five-in-a-rust --perft 8
+# kcachegrind callgrind.out.18203

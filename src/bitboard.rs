@@ -6,6 +6,7 @@ pub struct BitPosition {
     bbs: [BitBoard; 2],
     counts: [usize; COLS],
     move_count: usize,
+    hash: usize,
 }
 
 // Example bitboard layout (for ROWS = 6, COLS = 7)
@@ -40,6 +41,16 @@ fn check_win(bb: BitBoard) -> bool {
     check_win_delta(bb, 1) || check_win_delta(bb, ROWS1) || check_win_delta(bb, ROWS2) || check_win_delta(bb, ROWS)
 }
 
+impl BitPosition {
+pub fn _hash(self: &Self) -> usize {
+
+    // trick from phourstones:
+    // self.bbs[0] + self.bbs[1] + BOTTOM has 1s at the first empty place in each colum
+    // thus hash() is a perfect encoding of the position
+    self.bbs[0] + self.bbs[1] + BOTTOM + self.bbs[self.move_count & 1]
+}
+}
+
 impl Position for BitPosition {
     fn new() -> Self {
         let bbs = [0; 2];
@@ -48,14 +59,16 @@ impl Position for BitPosition {
         for i in 0..COLS {
             counts[i] = i * ROWS1;
         }
-        BitPosition { bbs, counts, move_count }
+        let hash = 0;
+        BitPosition { bbs, counts, move_count, hash }
     }
 
     fn duplicate(self: &Self) -> Self {
         let bbs = self.bbs.clone();
         let counts = self.counts.clone();
         let move_count = self.move_count;
-        BitPosition { bbs, counts, move_count }
+        let hash = self.hash;
+        BitPosition { bbs, counts, move_count, hash }
     }
 
     fn current_player(self: &Self) -> Player {
@@ -64,6 +77,11 @@ impl Position for BitPosition {
         } else {
             Player::White
         }
+    }
+
+    fn is_move_legal(self: &Self, mv: Move) -> bool {
+        // TODO: check if possible to do quicker
+        self.counts[mv] < (mv+1)*ROWS1 - 1
     }
 
     fn moves(self: &Self) -> Vec<Move> {
@@ -82,15 +100,17 @@ impl Position for BitPosition {
         self.bbs[self.move_count & 1] |= 1 << self.counts[mv];
         self.counts[mv] += 1;
         self.move_count += 1;
+        self.hash = self._hash();
     }
 
     fn unmake_move(self: &mut Self, mv: Move) {
         self.counts[mv] -= 1;
         self.move_count -= 1;
         self.bbs[self.move_count & 1] &= !(1 << self.counts[mv]);
+        self.hash = self._hash();
     }
 
-    fn move_count(self: &Self) -> usize {
+    fn legal_move_count(self: &Self) -> usize {
         // TODO: use some bit tricks to make this faster
         self.moves().len()
     }
@@ -100,10 +120,22 @@ impl Position for BitPosition {
             None
         } else if check_win(self.bbs[1 - (self.move_count & 1)]) {
             Some(GameResult::Win(Player::from_usize(1- (self.move_count & 1))))
-        } else if self.move_count() == SIZE {
+        } else if self.move_count == SIZE {
             Some(GameResult::Draw)
         } else {
             None
+        }
+    }
+
+    fn is_finished(self: &Self) -> bool {
+        if self.move_count < 7 {
+            false
+        } else if check_win(self.bbs[1 - (self.move_count & 1)]) {
+            true
+        } else if self.move_count == SIZE {
+            true
+        } else {
+            false
         }
     }
 
@@ -112,10 +144,7 @@ impl Position for BitPosition {
     }
 
     fn hash(self: &Self) -> usize {
-        // trick from phourstones:
-        // self.bbs[0] + self.bbs[1] + BOTTOM has 1s at the first empty place in each colum
-        // thus hash() is a perfect encoding of the position
-        self.bbs[0] + self.bbs[1] + BOTTOM + self.bbs[self.move_count & 1]
+        self.hash
     }
 
     fn symm_hash(self: &Self) -> usize {

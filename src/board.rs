@@ -146,6 +146,11 @@ impl Position for ArrayPosition {
         s
     }
 
+
+    fn is_move_legal(self: &Self, mv: Move) -> bool {
+        self.counts[mv] < ROWS
+    }
+
     fn moves(self: &Self) -> Vec<Move> {
         let mut legal_moves = vec![];
 
@@ -211,7 +216,7 @@ impl Position for ArrayPosition {
     //     }
     // }
 
-    fn move_count(self: &Self) -> usize {
+    fn legal_move_count(self: &Self) -> usize {
         let mut result = 0;
 
         for count in self.counts {

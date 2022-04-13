@@ -37,13 +37,19 @@ fn main() {
 
     board::initialize();
 
-    crate::table::Table::new();
-
     match &args[0][..] {
         "--perft" => {
             let depth = parse_string(args.get(1), 3);
+
+            println!("Fast array");
             perft::perft::<ArrayPosition>(depth);
+            println!("Fast bitboard");
             perft::perft::<BitPosition>(depth);
+
+            println!("Slow array");
+            perft::perft_naive::<ArrayPosition>(depth);
+            println!("Slow bitboard");
+            perft::perft_naive::<BitPosition>(depth);
         }
         "--rollout" => {
             let retries = parse_string(args.get(1), 1000);
@@ -53,6 +59,7 @@ fn main() {
             play::play();
         }
         "--solve" => {
+            crate::table::Table::new();
             solve::solve_game::<ArrayPosition>();
         }
         _ => {
