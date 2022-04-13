@@ -41,6 +41,26 @@ fn check_win(bb: BitBoard) -> bool {
     check_win_delta(bb, 1) || check_win_delta(bb, ROWS1) || check_win_delta(bb, ROWS2) || check_win_delta(bb, ROWS)
 }
 
+// fn count_twos_delta(bb: BitBoard, delta: usize) -> usize {
+//     let d = bb & (bb >> delta);
+//     d.count_ones() as usize
+// }
+
+// fn count_twos(bb: BitBoard) -> usize {
+//     count_twos_delta(bb, 1) + count_twos_delta(bb, ROWS1) + count_twos_delta(bb, ROWS2) + count_twos_delta(bb, ROWS)
+// }
+
+fn count_threes_delta(bb: BitBoard, delta: usize) -> usize {
+    let d = bb & (bb >> delta);
+    let d2 = d & (d >> delta);
+    d2.count_ones() as usize
+}
+
+fn count_threes(bb: BitBoard) -> usize {
+    count_threes_delta(bb, 1) + count_threes_delta(bb, ROWS1) + count_threes_delta(bb, ROWS2) + count_threes_delta(bb, ROWS)
+}
+
+
 impl BitPosition {
 pub fn _hash(self: &Self) -> usize {
 
@@ -152,7 +172,15 @@ impl Position for BitPosition {
     }
 
     fn get_lines_count(self: &Self, mv: Move) -> i32 {
-        panic!("Not implemented yet");
+        let mut bb = self.bbs[self.move_count & 1];
+        bb |= 1 << self.counts[mv];
+
+        // TODO: we can probably refactor the common part
+        // of counting twos and threes
+        let threes = count_threes(bb);
+        let count = 10000 * threes;
+        let count = count as i32;
+        -count
     }
 }
 

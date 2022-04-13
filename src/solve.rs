@@ -85,7 +85,6 @@ pub fn solve_top<P: Position>(pos: &mut P, depth: usize) -> usize {
     }
     let mut hashmap = Table::new();
     let result = solve_iter(pos, &mut hashmap, depth, LOSS, WIN);
-    hashmap.print_stats();
 
     return result;
 }
@@ -93,13 +92,14 @@ pub fn solve_top<P: Position>(pos: &mut P, depth: usize) -> usize {
 fn lookup_table<P:Position>(pos: &mut P, hashmap: &mut Table, depth: usize) -> Option<usize> {
     match hashmap.get(pos.hash()) {
         Some(result) => Some(result),
-        None => {
-            if SIZE - depth <= SYMMETRY_CUTOFF {
-                hashmap.get(pos.symm_hash())
-            } else {
-                None
-            }
-        }
+        None => None
+        // {
+        //     if SIZE - depth <= SYMMETRY_CUTOFF {
+        //         hashmap.get(pos.symm_hash())
+        //     } else {
+        //         None
+        //     }
+        // }
     }
 }
 
