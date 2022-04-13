@@ -5,6 +5,7 @@
 extern crate lazy_static;
 
 mod bestmove;
+mod bitboard;
 mod board;
 mod perft;
 mod play;
@@ -16,6 +17,7 @@ mod types;
 mod util;
 
 use util::*;
+use bitboard::BitPosition;
 use board::ArrayPosition;
 
 const USAGE: &'static str = "\n
@@ -41,7 +43,7 @@ fn main() {
         "--perft" => {
             let depth = parse_string(args.get(1), 3);
             perft::perft::<ArrayPosition>(depth);
-            // perft::perft::<BitPosition>(depth);
+            perft::perft::<BitPosition>(depth);
         }
         "--rollout" => {
             let retries = parse_string(args.get(1), 1000);

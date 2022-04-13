@@ -2,7 +2,7 @@ use rand::prelude::*;
 use crate::types::*;
 
 pub type Board = [Piece; SIZE];
-pub type Counts = [usize; COLS];
+type Counts = [usize; COLS];
 
 pub static mut LINES: Vec<Vec<usize>> = vec![];
 pub static mut LINES_BY_INDEX: Vec<Vec<Vec<usize>>> = vec![];
@@ -199,17 +199,17 @@ impl Position for ArrayPosition {
         }
     }
 
-    fn fast_result(self: &Self, mv: Move) -> Option<GameResult> {
-        if self.move_count < 7 {
-            None
-        } else if is_win_fast(self.board, mv, self.counts[mv]-1) {
-            Some(GameResult::Win(self.to_play.other()))
-        } else if self.move_count == SIZE {
-            Some(GameResult::Draw)
-        } else {
-            None
-        }
-    }
+    // fn fast_result(self: &Self, mv: Move) -> Option<GameResult> {
+    //     if self.move_count < 7 {
+    //         None
+    //     } else if is_win_fast(self.board, mv, self.counts[mv]-1) {
+    //         Some(GameResult::Win(self.to_play.other()))
+    //     } else if self.move_count == SIZE {
+    //         Some(GameResult::Draw)
+    //     } else {
+    //         None
+    //     }
+    // }
 
     fn move_count(self: &Self) -> usize {
         let mut result = 0;

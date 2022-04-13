@@ -1,11 +1,15 @@
 pub use crate::position::Position;
 
 pub const ROWS: usize = 6;
-pub const COLS: usize = 5;
+pub const COLS: usize = 7;
 pub const SIZE: usize = ROWS * COLS;
 
 pub fn rowcol2index(row: usize, col: usize) -> usize {
     COLS * row + col
+}
+
+pub fn colrow2index(col: usize, row: usize) -> usize {
+    (ROWS + 1) * col + row
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -19,6 +23,14 @@ impl Player {
         match self {
             Player::Black => Player::White,
             Player::White => Player::Black,
+        }
+    }
+
+    pub fn from_usize(pl: usize) -> Player {
+        if pl == 0 {
+            Player::Black
+        } else {
+            Player::White
         }
     }
 }

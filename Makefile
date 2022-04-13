@@ -2,7 +2,7 @@ benchmark:
 	@cargo run --release -q -- --rollout 1000000
 
 perft:
-	@cargo run --release -q -- --perft 4
+	@cargo run --release -q -- --perft 11
 
 play:
 	@cargo run --release -q -- --play

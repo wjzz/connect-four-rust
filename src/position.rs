@@ -14,7 +14,7 @@ pub trait Position {
     fn make_move(self: &mut Self, mv: Move);
     fn unmake_move(self: &mut Self, mv: Move);
     fn result(self: &Self) -> Option<GameResult>;
-    fn fast_result(self: &Self, mv: Move) -> Option<GameResult>;
+    // fn fast_result(self: &Self, mv: Move) -> Option<GameResult>;
     fn move_count(self: &Self) -> usize;
     fn hash(self: &Self) -> usize;
     fn symm_hash(self: &Self) -> usize; /* hash of the symmetric image (y axis) */
