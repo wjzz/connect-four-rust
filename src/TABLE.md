@@ -1,3 +1,16 @@
+# 7x6
+
+collissions = 11,587,849,399
+inserts = 11,831,305,470
+uppers = 424,682,072
+lowers = 11,406,623,398
+gets       = 14,877,105,077
+get_misses = 11,700,681,803
+
+6 x 7 | result =     10 | nodes = 20,280,804,729 | [elapsed: 6151025] [speed: 3,297K nps]
+1575432 kBs of ram
+
+
 # 6x6
 
 Using an extremely big trans. table seems to be not so great. We probably keep way to many old nodes and maybe it's just slower to access memory that is distributed among many memory sticks (IDK).

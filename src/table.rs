@@ -74,7 +74,9 @@ impl Table {
                 let big_value = (field.value >> 3) & 0b111;
                 return Some(big_value);
             } else if field.lower_hash == hash {
-                return Some(field.value & 0b111);
+                let lower_value = field.value & 0b111;
+                assert!(lower_value <= 4);
+                return Some(lower_value);
             }
         }
         self.get_misses += 1;
