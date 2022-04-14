@@ -45,14 +45,16 @@ rows = 6, cols = 5 ==>   0 | 00:00:01.690 |            3,700,523 nodes
 rows = 5, cols = 6 ==>   0 | 00:00:02.180 |            5,170,173 nodes
 rows = 6, cols = 6 ==> -10 | 00:00:49.552 |          150,906,287 nodes
 
-# Laptop, bitboards using best ordering, with symmetry
+# Laptop, bitboards using the best ordering, with symmetry
 
-rows = 4, cols = 4 ==>   0 | 00:00:00.625 |               12,638 nodes
-rows = 5, cols = 4 ==>   0 | 00:00:00.651 |               51,177 nodes
-rows = 4, cols = 5 ==>   0 | 00:00:00.681 |               66,290 nodes
-rows = 6, cols = 4 ==>   0 | 00:00:00.719 |              602,263 nodes
-rows = 4, cols = 6 ==> -10 | 00:00:00.781 |            1,105,159 nodes
-rows = 5, cols = 5 ==>   0 | 00:00:00.808 |            1,047,194 nodes
-rows = 6, cols = 5 ==>   0 | 00:00:01.383 |            4,982,337 nodes
-rows = 5, cols = 6 ==>   0 | 00:00:02.295 |           11,497,880 nodes
-rows = 6, cols = 6 ==> -10 | 00:00:46.660 |          286,353,722 nodes
+rows = 4, cols = 4 ==>   0 | 00:00:00.595 |               12,199 nodes
+rows = 5, cols = 4 ==>   0 | 00:00:00.650 |               35,702 nodes
+rows = 4, cols = 5 ==>   0 | 00:00:00.630 |               55,529 nodes
+rows = 6, cols = 4 ==>   0 | 00:00:00.697 |              345,956 nodes
+rows = 4, cols = 6 ==> -10 | 00:00:00.728 |              713,340 nodes
+rows = 5, cols = 5 ==>   0 | 00:00:00.758 |              768,536 nodes
+rows = 6, cols = 5 ==>   0 | 00:00:01.198 |            3,402,602 nodes
+rows = 5, cols = 6 ==>   0 | 00:00:01.541 |            4,785,962 nodes
+rows = 6, cols = 6 ==> -10 | 00:00:29.701 |          137,755,314 nodes
+rows = 6, cols = 7 ==>  10 | 00:06:01.058 |        1,602,535,755 nodes
+rows = 7, cols = 6 ==>  10 | 00:02:45.308 |          744,221,290 nodes

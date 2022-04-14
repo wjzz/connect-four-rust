@@ -76,6 +76,8 @@ if __name__ == "__main__":
         (6,5),
         (5,6),
         (6,6),
+        (6,7),
+        (7,6),
     ]
     for (rows, cols) in SIZES:
         run_result = run_rust_prog(rows, cols)

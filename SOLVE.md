@@ -15,6 +15,7 @@
 | 6x6 | -10 |
 | 4x6 | -10 |
 | 4x7 |   0 |
+| 6x7 |  10 |
 
 # benchmarks (most results don't use the symmetry cutoff)
 

@@ -74,7 +74,7 @@ impl Position for ArrayPosition {
         let mut count = 0;
         let pp = Piece::from_player(self.to_play);
         unsafe {
-            for line in &crate::board::LINES_BY_INDEX[index] {
+            for line in &LINES_BY_INDEX[index] {
                 let mut line_count = 0;
                 for i in line {
                     if self.board[*i] == pp {

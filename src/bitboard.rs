@@ -9,6 +9,8 @@ pub struct BitPosition {
     hash: usize,
 }
 
+static mut LINES_BY_INDEX: Vec<Vec<usize>> = vec![];
+
 // Example bitboard layout (for ROWS = 6, COLS = 7)
 //
 //
@@ -188,20 +190,128 @@ impl Position for BitPosition {
     }
 
     fn get_lines_count(self: &Self, mv: Move) -> i32 {
-        let mut bb = self.bbs[self.move_count & 1];
-        bb |= 1 << self.counts[mv];
+        let bb = self.bbs[self.move_count & 1];
+        let obb = self.bbs[1 - (self.move_count & 1)];
 
-        if check_win(bb) {
-            return 1_000_000;
+        let mut count = 0;
+
+        unsafe {
+            let field = self.counts[mv];
+            if LINES_BY_INDEX[field].len() < 2 {
+                println!("empty lines = {}, {}, {}", field, mv, self.counts[mv]);
+            }
+            assert!(LINES_BY_INDEX[field].len() >= 2);
+            for line in &LINES_BY_INDEX[field] {
+                let my_count = (bb & line).count_ones() as i32;
+                let opp_count = (obb & line).count_ones() as i32;
+                assert!(0 <= my_count);
+                assert!(0 <= opp_count);
+                assert!(my_count <= 3);
+                assert!(opp_count <= 3);
+
+                let line_count = my_count - opp_count;
+                // sure win
+                if line_count == 3 {
+                    count += 10_000;
+                // preventing opp win
+                } else if line_count == -3 {
+                    count += 5_000;
+                } else if line_count == 2 {
+                    count += 100;
+                } else {
+                    count += line_count.max(0);
+                }
+            }
         }
+        return count;
+    }
 
-        // TODO: we can probably refactor the common part
-        // of counting twos and threes
-        let threes = count_threes(bb);
-        let count = 10_000 * threes;
-        count as i32
+    // fn get_lines_count(self: &Self, mv: Move) -> i32 {
+    //     let mut bb = self.bbs[self.move_count & 1];
+    //     bb |= 1 << self.counts[mv];
+
+    //     if check_win(bb) {
+    //         return 1_000_000;
+    //     }
+
+    //     // TODO: we can probably refactor the common part
+    //     // of counting twos and threes
+    //     let threes = count_threes(bb);
+    //     let count = 10_000 * threes;
+    //     count as i32
+    // }
+}
+
+pub fn print_mask(mask: usize) {
+    for row in (0..ROWS).rev() {
+        for col in 0..COLS {
+            let index = colrow2index(col, row);
+            if mask & (1 << index) != 0 {
+                print!("x ");
+            } else {
+                print!(". ");
+            }
+        }
+        println!();
     }
 }
+
+pub fn initialize_lines() {
+    unsafe {
+        LINES_BY_INDEX = vec![vec![]; 64];
+    }
+    for row in 0..ROWS {
+        for col in 0..COLS {
+            let base = colrow2index(col, row);
+            // rows
+            if col + 3 < COLS {
+                let d = ROWS+1;
+                add_line(base, base+d, base+2*d, base+3*d);
+            }
+            // column
+            if row + 3 < ROWS {
+                let d = 1;
+                add_line(base, base+d, base+2*d, base+3*d);
+            }
+            // rising diagonal
+            if row + 3 < ROWS && col >= 3 {
+                let d = ROWS;
+                add_line(base, base-d, base-2*d, base-3*d);
+            }
+            // // decreasing diagonal
+            if row + 3 < ROWS && col + 3 < COLS {
+                let d = ROWS + 2;
+                add_line(base, base+d, base+2*d, base+3*d);
+            }
+        }
+    }
+
+    // unsafe {
+    //     for row in 0..ROWS {
+    //         for col in 0..COLS {
+    //             let base = colrow2index(col, row);
+    //             println!("(col={}, row={}) = {} ===> {}", col, row, base, LINES_BY_INDEX[base].len());
+
+    //             for mask in &LINES_BY_INDEX[base] {
+    //                 print_mask(*mask);
+    //                 println!();
+    //             }
+    //         }
+    //     }
+    // }
+}
+
+fn add_line(a: usize, b: usize, c: usize, d: usize) {
+    unsafe {
+        let mask = (1 << a) + (1 << b) + (1 << c) + (1 << d);
+
+        LINES_BY_INDEX[a].push(mask);
+        LINES_BY_INDEX[b].push(mask);
+        LINES_BY_INDEX[c].push(mask);
+        LINES_BY_INDEX[d].push(mask);
+    }
+}
+
 
 #[cfg(test)]
 mod tests {

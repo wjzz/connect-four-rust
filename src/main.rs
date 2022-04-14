@@ -36,6 +36,7 @@ fn main() {
     }
 
     board::initialize();
+    bitboard::initialize_lines();
 
     match &args[0][..] {
         "--perft" => {
@@ -59,11 +60,11 @@ fn main() {
             play::play();
         }
         "--solve" => {
-            println!("ArrayPosition");
-            solve::solve_game::<ArrayPosition>();
+            // println!("ArrayPosition");
+            // solve::solve_game::<ArrayPosition>();
 
-            // println!("BitPosition");
-            // solve::solve_game::<BitPosition>();
+            println!("BitPosition");
+            solve::solve_game::<BitPosition>();
         }
         _ => {
             show_usage_and_exit();
