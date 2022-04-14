@@ -93,7 +93,7 @@ impl Position for ArrayPosition {
                 }
             }
         }
-        return -count;
+        return count;
     }
 
     fn duplicate(self: &Self) -> ArrayPosition {

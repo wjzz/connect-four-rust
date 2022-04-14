@@ -179,8 +179,7 @@ impl Position for BitPosition {
         // of counting twos and threes
         let threes = count_threes(bb);
         let count = 10000 * threes;
-        let count = count as i32;
-        -count
+        count as i32
     }
 }
 

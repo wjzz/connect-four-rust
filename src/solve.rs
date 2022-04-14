@@ -13,6 +13,8 @@ lazy_static! {
 }
 
 static mut NODE_COUNT: usize = 0;
+static mut CUTOFF_NODES: usize = 0;
+static mut PRE_CUTOFF_NODES: usize = 0;
 
 const MIN_DEPTH: usize = 1;
 const SYMMETRY_CUTOFF: usize = 10;
@@ -63,14 +65,17 @@ pub fn solve_game<P:Position>() {
             _ => { panic!("wrong result"); }
         };
 
+        let ordering_factor = 100 * CUTOFF_NODES / PRE_CUTOFF_NODES;
+
         if *VERBOSE_OUTPUT {
             println!(
-                "\n{} x {} | result = {:6} | nodes = {:12} | [elapsed: {}] [speed: {}K nps]",
+                "\n{} x {} | result = {:6} | nodes = {:12} | [elapsed: {}] | ordering: {}% | [speed: {}K nps]",
                 ROWS,
                 COLS,
                 result,
                 NODE_COUNT.separate_with_commas(),
                 elapsed_millisecs,
+                ordering_factor,
                 nps.separate_with_commas(),
             );
         } else {
@@ -129,10 +134,16 @@ fn solve_iter<P: Position>(pos: &mut P, hashmap: &mut Table, depth: usize, mut a
             }
             let mut moves = pos.moves();
             order_moves(pos, &mut moves);
+
+            let mut nodes_here = 0;
+
             for mv in moves {
+                nodes_here += 1;
+
                 if *VERBOSE_OUTPUT {
                     progress_bar(depth, mv);
                 }
+
                 pos.make_move(mv);
                 let eval = 2 - solve_iter(pos, hashmap, depth-1, 2-beta, 2-alpha);
                 pos.unmake_move(mv);
@@ -140,6 +151,10 @@ fn solve_iter<P: Position>(pos: &mut P, hashmap: &mut Table, depth: usize, mut a
                 if eval > alpha {
                     alpha = eval;
                     if beta <= alpha {
+                        if nodes_here == 1 {
+                            CUTOFF_NODES += 1;
+                        }
+                        PRE_CUTOFF_NODES += 1;
                         break;
                     }
                 }
@@ -164,9 +179,23 @@ fn solve_iter<P: Position>(pos: &mut P, hashmap: &mut Table, depth: usize, mut a
         }
     }
 }
+const CENTER_COL: i32 = COLS as i32 / 2;
+
+fn get_centralization_factor(mv: &Move) -> i32 {
+    let mv = *mv as i32;
+    COLS as i32 - (CENTER_COL - mv).abs()
+}
+
+fn get_move_order<P: Position>(pos: &P, mv: &Move) -> i32 {
+    // pos.get_lines_count(*mv) + 2 * get_centralization_factor(mv)
+    0
+
+    // favor central move
+    // get_centralization_factor(mv)
+}
 
 fn order_moves<P: Position>(pos: &P, moves: &mut Vec<Move>) {
-    moves.sort_by_cached_key(|mv| pos.get_lines_count(*mv));
+    moves.sort_by_cached_key(|mv| -get_move_order(pos, mv));
 }
 
 fn progress_bar(depth: usize, mv: Move) {
