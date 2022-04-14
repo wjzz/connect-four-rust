@@ -44,3 +44,15 @@ rows = 5, cols = 5 ==>   0 | 00:00:00.832 |              835,384 nodes
 rows = 6, cols = 5 ==>   0 | 00:00:01.690 |            3,700,523 nodes
 rows = 5, cols = 6 ==>   0 | 00:00:02.180 |            5,170,173 nodes
 rows = 6, cols = 6 ==> -10 | 00:00:49.552 |          150,906,287 nodes
+
+# Laptop, bitboards using best ordering, with symmetry
+
+rows = 4, cols = 4 ==>   0 | 00:00:00.625 |               12,638 nodes
+rows = 5, cols = 4 ==>   0 | 00:00:00.651 |               51,177 nodes
+rows = 4, cols = 5 ==>   0 | 00:00:00.681 |               66,290 nodes
+rows = 6, cols = 4 ==>   0 | 00:00:00.719 |              602,263 nodes
+rows = 4, cols = 6 ==> -10 | 00:00:00.781 |            1,105,159 nodes
+rows = 5, cols = 5 ==>   0 | 00:00:00.808 |            1,047,194 nodes
+rows = 6, cols = 5 ==>   0 | 00:00:01.383 |            4,982,337 nodes
+rows = 5, cols = 6 ==>   0 | 00:00:02.295 |           11,497,880 nodes
+rows = 6, cols = 6 ==> -10 | 00:00:46.660 |          286,353,722 nodes

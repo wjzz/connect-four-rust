@@ -131,21 +131,10 @@ fn solve_iter<P: Position>(pos: &mut P, hashmap: &mut Table, depth: usize, mut a
 
             let mut nodes_here = 0;
 
-            if depth == SIZE+1 {
-                println!("h1 = {:064b}", pos.hash());
-            }
-
             for mv in moves {
                 nodes_here += 1;
 
                 pos.make_move(mv);
-
-                if depth == SIZE+1 {
-                    println!("mv = {} | {} | {}", mv, pos.hash(), pos.symm_hash());
-                    println!("h1 = {:064b}", pos.hash());
-                    println!("h2 = {:064b}", pos.symm_hash());
-                }
-
                 let eval = 2 - solve_iter(pos, hashmap, depth-1, 2-beta, 2-alpha);
                 pos.unmake_move(mv);
 

@@ -176,8 +176,6 @@ impl Position for BitPosition {
     }
 
     fn symm_hash(self: &Self) -> usize {
-        assert_eq!(ROW1.count_ones() as usize, ROWS1);
-        assert_eq!(BOTTOM.count_ones() as usize, COLS);
         let mut h = self.hash;
         let mut hash = 0;
         for _ in 0..COLS {

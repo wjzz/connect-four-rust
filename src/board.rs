@@ -86,6 +86,9 @@ impl Position for ArrayPosition {
                 // sure win
                 if line_count == 3 {
                     count += 10_000;
+                // preventing opp win
+                } else if line_count == -3 {
+                    count += 5_000;
                 } else if line_count == 2 {
                     count += 100;
                 } else {

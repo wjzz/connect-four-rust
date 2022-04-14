@@ -60,6 +60,7 @@
 | 6x7 | black win | 21,298,838,143 | 1h 56 min | alpha-beta w/ move ordering & hashmap (32gb)
 | 6x7 | black win | 20,280,804,729 | 1h 40 min | alpha-beta w/ move ordering & my hash & no flag & symmetry (1.5gb)
 | 6x7 | black win |  1,788,661,574 |    10 min | alpha-beta w/ better move ordering & my hash & no flag & symmetry (1.5gb)
+| 6x7 | black win |  5,651,120,237 |    15 min | bit boards
 
 | 4x6 | white win | 5,358,177 | 1.5s | alpha-beta w/ move ordering & hashmap (20gb)
 
