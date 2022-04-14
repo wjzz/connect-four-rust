@@ -1,6 +1,6 @@
 pub use crate::position::Position;
 
-pub const ROWS: usize = 5;
+pub const ROWS: usize = 6;
 pub const COLS: usize = 5;
 pub const SIZE: usize = ROWS * COLS;
 

@@ -72,6 +72,7 @@ if __name__ == "__main__":
         (4,5),
         (6,4),
         (4,6),
+        (5,5),
         (6,5),
         (5,6),
         (6,6),
@@ -90,4 +91,4 @@ if __name__ == "__main__":
 
         snodes = f"{nodes:,}".rjust(20)
 
-        print(f"rows = {rows}, cols = {cols} ==> {result:3} | {h:02}:{m:02}:{s:02}.{mi:3} | {snodes} nodes ")
+        print(f"rows = {rows}, cols = {cols} ==> {result:3} | {h:02}:{m:02}:{s:02}.{mi:03} | {snodes} nodes ")

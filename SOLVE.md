@@ -16,7 +16,7 @@
 | 4x6 | -10 |
 | 4x7 |   0 |
 
-# benchmarks
+# benchmarks (most results don't use the symmetry cutoff)
 
 | size (row x cols) | result | nodes | time | notes
 |-|-|-|-|-|
@@ -59,6 +59,7 @@
 
 | 6x7 | black win | 21,298,838,143 | 1h 56 min | alpha-beta w/ move ordering & hashmap (32gb)
 | 6x7 | black win | 20,280,804,729 | 1h 40 min | alpha-beta w/ move ordering & my hash & no flag & symmetry (1.5gb)
+| 6x7 | black win |  1,788,661,574 |    10 min | alpha-beta w/ better move ordering & my hash & no flag & symmetry (1.5gb)
 
 | 4x6 | white win | 5,358,177 | 1.5s | alpha-beta w/ move ordering & hashmap (20gb)
 
@@ -69,14 +70,3 @@
 | 7x4 | draw | 1,005,078 | 8.5s | alpha-beta w/ move ordering & hashmap (32gb)
 
 | 8x4 | draw |  6,848,615 | 10s | alpha-beta w/ move ordering & hashmap (32gb)
-
-## move ordering improvements
-
-depth = 26 | result =      0 | nodes = 19,625,891   | [elapsed: 2375] [speed: 8,263K nps]
-depth = 26 | result =      0 | nodes = 9,841,261    | [elapsed: 1479] [speed: 6,653K nps]
-depth = 26 | result =      0 | nodes = 7,891,967    | [elapsed: 1231] [speed: 6,411K nps]
-
-## transposition table (wrong result)
-
-collissions = 43587794
-depth = 37 | result =      0 | nodes = 734,845,553  | [elapsed: 241041] [speed: 3,048K nps]

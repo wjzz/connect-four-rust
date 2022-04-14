@@ -59,8 +59,8 @@ fn main() {
             play::play();
         }
         "--solve" => {
-            println!("ArrayPosition");
-            solve::solve_game::<ArrayPosition>();
+            // println!("ArrayPosition");
+            // solve::solve_game::<ArrayPosition>();
 
             println!("BitPosition");
             solve::solve_game::<BitPosition>();

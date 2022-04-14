@@ -1,4 +1,3 @@
-use std::io::Write;
 use std::time::Instant;
 use thousands::Separable;
 
@@ -40,13 +39,7 @@ impl GameResult {
 }
 
 pub fn solve_game<P:Position>() {
-
     unsafe {
-        if *VERBOSE_OUTPUT {
-            println!("");
-            println!("");
-        }
-
         let depth = SIZE + 1;
 
         let now = Instant::now();
@@ -69,7 +62,7 @@ pub fn solve_game<P:Position>() {
 
         if *VERBOSE_OUTPUT {
             println!(
-                "\n{} x {} | result = {:6} | nodes = {:12} | [elapsed: {}] | ordering: {}% | [speed: {}K nps]",
+                "{} x {} | result = {:6} | nodes = {:12} | [elapsed: {}] | ordering: {}% | [speed: {}K nps]",
                 ROWS,
                 COLS,
                 result,
@@ -97,14 +90,15 @@ pub fn solve_top<P: Position>(pos: &mut P, depth: usize) -> usize {
 fn lookup_table<P:Position>(pos: &mut P, hashmap: &mut Table, depth: usize) -> Option<usize> {
     match hashmap.get(pos.hash()) {
         Some(result) => Some(result),
-        None => None
-        // {
-        //     if SIZE - depth <= SYMMETRY_CUTOFF {
-        //         hashmap.get(pos.symm_hash())
-        //     } else {
-        //         None
-        //     }
-        // }
+        None =>
+        // None
+        {
+            if SIZE - depth <= SYMMETRY_CUTOFF {
+                hashmap.get(pos.symm_hash())
+            } else {
+                None
+            }
+        }
     }
 }
 
@@ -133,18 +127,25 @@ fn solve_iter<P: Position>(pos: &mut P, hashmap: &mut Table, depth: usize, mut a
                 }
             }
             let mut moves = pos.moves();
-            order_moves(pos, &mut moves);
+            order_moves(pos, &mut moves, depth);
 
             let mut nodes_here = 0;
+
+            if depth == SIZE+1 {
+                println!("h1 = {:064b}", pos.hash());
+            }
 
             for mv in moves {
                 nodes_here += 1;
 
-                if *VERBOSE_OUTPUT {
-                    progress_bar(depth, mv);
+                pos.make_move(mv);
+
+                if depth == SIZE+1 {
+                    println!("mv = {} | {} | {}", mv, pos.hash(), pos.symm_hash());
+                    println!("h1 = {:064b}", pos.hash());
+                    println!("h2 = {:064b}", pos.symm_hash());
                 }
 
-                pos.make_move(mv);
                 let eval = 2 - solve_iter(pos, hashmap, depth-1, 2-beta, 2-alpha);
                 pos.unmake_move(mv);
 
@@ -179,6 +180,7 @@ fn solve_iter<P: Position>(pos: &mut P, hashmap: &mut Table, depth: usize, mut a
         }
     }
 }
+
 const CENTER_COL: i32 = COLS as i32 / 2;
 
 fn get_centralization_factor(mv: &Move) -> i32 {
@@ -186,25 +188,10 @@ fn get_centralization_factor(mv: &Move) -> i32 {
     COLS as i32 - (CENTER_COL - mv).abs()
 }
 
-fn get_move_order<P: Position>(pos: &P, mv: &Move) -> i32 {
-    // pos.get_lines_count(*mv) + 2 * get_centralization_factor(mv)
-    0
-
-    // favor central move
-    // get_centralization_factor(mv)
+fn get_move_order<P: Position>(pos: &P, mv: &Move, depth: usize) -> i32 {
+    pos.get_lines_count(*mv) + 2 * get_centralization_factor(mv)
 }
 
-fn order_moves<P: Position>(pos: &P, moves: &mut Vec<Move>) {
-    moves.sort_by_cached_key(|mv| -get_move_order(pos, mv));
-}
-
-fn progress_bar(depth: usize, mv: Move) {
-    if depth == SIZE+1 {
-        println!("\x1b[2A\r1st = {}\n", mv);
-    } else if depth == SIZE {
-        println!("\x1b[1A\r2nd = {}", mv);
-    } else if depth == SIZE-1 {
-        print!("\x1bm\r3rd = {}", mv);
-        std::io::stdout().flush().unwrap();
-    }
+fn order_moves<P: Position>(pos: &P, moves: &mut Vec<Move>, depth: usize) {
+    moves.sort_by_cached_key(|mv| -get_move_order(pos, mv, depth));
 }

@@ -20,17 +20,20 @@ pub struct BitPosition {
 // 02 09 16 23 30 36 43
 // 01 08 15 22 29 35 42
 // 00 07 14 21 28 34 41
-//          BOTTOM
+//       BOTTOM
 
 const COLS1: usize = COLS + 1;
 const COLS2: usize = COLS + 2;
 const COLSM1: usize = COLS - 1;
 const ROWS1: usize = ROWS + 1;
 const ROWS2: usize = ROWS + 2;
+const SIZE1: usize = COLS1 * ROWS;
 
 const COL1: usize = (1 << COLS1) - 1;
+const ROW1: usize = (1 << ROWS1) - 1;
+
 const ALL1: usize = !0;
-const BOTTOM: usize = ALL1 / COL1;
+const BOTTOM: usize = (ALL1 % (1 << COLS * ROWS1)) / ROW1;
 
 fn check_win_delta(bb: BitBoard, delta: usize) -> bool {
     let d = bb & (bb >> delta);
@@ -62,13 +65,18 @@ fn count_threes(bb: BitBoard) -> usize {
 
 
 impl BitPosition {
-pub fn _hash(self: &Self) -> usize {
+    pub fn _hash(self: &Self) -> usize {
 
-    // trick from phourstones:
-    // self.bbs[0] + self.bbs[1] + BOTTOM has 1s at the first empty place in each colum
-    // thus hash() is a perfect encoding of the position
-    self.bbs[0] + self.bbs[1] + BOTTOM + self.bbs[self.move_count & 1]
-}
+        // trick from phourstones:
+        // self.bbs[0] + self.bbs[1] + BOTTOM has 1s at the first empty place in each colum
+        // thus hash() is a perfect encoding of the position
+        //
+        // Example value
+        // (starting with lower bits)
+        // 00001111000010000111100001000011110000100001111pppppppp
+
+        self.bbs[0] + self.bbs[1] + BOTTOM + self.bbs[self.move_count & 1]
+    }
 }
 
 impl Position for BitPosition {
@@ -79,7 +87,7 @@ impl Position for BitPosition {
         for i in 0..COLS {
             counts[i] = i * ROWS1;
         }
-        let hash = 0;
+        let hash = BOTTOM;
         BitPosition { bbs, counts, move_count, hash }
     }
 
@@ -168,17 +176,31 @@ impl Position for BitPosition {
     }
 
     fn symm_hash(self: &Self) -> usize {
-        panic!("Not implemented yet");
+        assert_eq!(ROW1.count_ones() as usize, ROWS1);
+        assert_eq!(BOTTOM.count_ones() as usize, COLS);
+        let mut h = self.hash;
+        let mut hash = 0;
+        for _ in 0..COLS {
+            hash <<= ROWS1;
+            hash |= h & ROW1;
+            h >>= ROWS1;
+        }
+
+        hash
     }
 
     fn get_lines_count(self: &Self, mv: Move) -> i32 {
         let mut bb = self.bbs[self.move_count & 1];
         bb |= 1 << self.counts[mv];
 
+        if check_win(bb) {
+            return 1_000_000;
+        }
+
         // TODO: we can probably refactor the common part
         // of counting twos and threes
         let threes = count_threes(bb);
-        let count = 10000 * threes;
+        let count = 10_000 * threes;
         count as i32
     }
 }
