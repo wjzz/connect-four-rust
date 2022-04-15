@@ -43,7 +43,10 @@ fn check_win_delta(bb: BitBoard, delta: usize) -> bool {
 }
 
 fn check_win(bb: BitBoard) -> bool {
-    check_win_delta(bb, 1) || check_win_delta(bb, ROWS1) || check_win_delta(bb, ROWS2) || check_win_delta(bb, ROWS)
+    check_win_delta(bb, 1)
+        || check_win_delta(bb, ROWS1)
+        || check_win_delta(bb, ROWS2)
+        || check_win_delta(bb, ROWS)
 }
 
 // fn count_twos_delta(bb: BitBoard, delta: usize) -> usize {
@@ -62,13 +65,14 @@ fn count_threes_delta(bb: BitBoard, delta: usize) -> usize {
 }
 
 fn count_threes(bb: BitBoard) -> usize {
-    count_threes_delta(bb, 1) + count_threes_delta(bb, ROWS1) + count_threes_delta(bb, ROWS2) + count_threes_delta(bb, ROWS)
+    count_threes_delta(bb, 1)
+        + count_threes_delta(bb, ROWS1)
+        + count_threes_delta(bb, ROWS2)
+        + count_threes_delta(bb, ROWS)
 }
-
 
 impl BitPosition {
     pub fn _hash(self: &Self) -> usize {
-
         // trick from phourstones:
         // self.bbs[0] + self.bbs[1] + BOTTOM has 1s at the first empty place in each colum
         // thus hash() is a perfect encoding of the position
@@ -90,7 +94,12 @@ impl Position for BitPosition {
             counts[i] = i * ROWS1;
         }
         let hash = BOTTOM;
-        BitPosition { bbs, counts, move_count, hash }
+        BitPosition {
+            bbs,
+            counts,
+            move_count,
+            hash,
+        }
     }
 
     fn duplicate(self: &Self) -> Self {
@@ -98,7 +107,12 @@ impl Position for BitPosition {
         let counts = self.counts.clone();
         let move_count = self.move_count;
         let hash = self.hash;
-        BitPosition { bbs, counts, move_count, hash }
+        BitPosition {
+            bbs,
+            counts,
+            move_count,
+            hash,
+        }
     }
 
     fn current_player(self: &Self) -> Player {
@@ -111,14 +125,14 @@ impl Position for BitPosition {
 
     fn is_move_legal(self: &Self, mv: Move) -> bool {
         // TODO: check if possible to do quicker
-        self.counts[mv] < (mv+1)*ROWS1 - 1
+        self.counts[mv] < (mv + 1) * ROWS1 - 1
     }
 
     fn moves(self: &Self) -> Vec<Move> {
         let mut legal_moves = vec![];
 
         for i in 0..COLS {
-            if self.counts[i] < (i+1)*ROWS1 - 1 {
+            if self.counts[i] < (i + 1) * ROWS1 - 1 {
                 legal_moves.push(i);
             }
         }
@@ -149,7 +163,9 @@ impl Position for BitPosition {
         if self.move_count < 7 {
             None
         } else if check_win(self.bbs[1 - (self.move_count & 1)]) {
-            Some(GameResult::Win(Player::from_usize(1- (self.move_count & 1))))
+            Some(GameResult::Win(Player::from_usize(
+                1 - (self.move_count & 1),
+            )))
         } else if self.move_count == SIZE {
             Some(GameResult::Draw)
         } else {
@@ -265,23 +281,23 @@ pub fn initialize_lines() {
             let base = colrow2index(col, row);
             // rows
             if col + 3 < COLS {
-                let d = ROWS+1;
-                add_line(base, base+d, base+2*d, base+3*d);
+                let d = ROWS + 1;
+                add_line(base, base + d, base + 2 * d, base + 3 * d);
             }
             // column
             if row + 3 < ROWS {
                 let d = 1;
-                add_line(base, base+d, base+2*d, base+3*d);
+                add_line(base, base + d, base + 2 * d, base + 3 * d);
             }
             // rising diagonal
             if row + 3 < ROWS && col >= 3 {
                 let d = ROWS;
-                add_line(base, base-d, base-2*d, base-3*d);
+                add_line(base, base - d, base - 2 * d, base - 3 * d);
             }
             // // decreasing diagonal
             if row + 3 < ROWS && col + 3 < COLS {
                 let d = ROWS + 2;
-                add_line(base, base+d, base+2*d, base+3*d);
+                add_line(base, base + d, base + 2 * d, base + 3 * d);
             }
         }
     }
@@ -312,25 +328,33 @@ fn add_line(a: usize, b: usize, c: usize, d: usize) {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_all_ones() {
-        assert_eq!(ALL1, 0b1111111111111111111111111111111111111111111111111111111111111111);
+        assert_eq!(
+            ALL1,
+            0b1111111111111111111111111111111111111111111111111111111111111111
+        );
     }
 
     #[test]
     fn test_column_of_ones() {
         // println!("COL1 = {:b}", COL1);
-        assert_eq!(COL1, 0b0000000000000000000000000000000000000000000000000000000011111111);
+        assert_eq!(
+            COL1,
+            0b0000000000000000000000000000000000000000000000000000000011111111
+        );
     }
 
     #[test]
     fn test_bottom() {
-        assert_eq!(BOTTOM, 0b0000000100000001000000010000000100000001000000010000000100000001);
+        assert_eq!(
+            BOTTOM,
+            0b0000000100000001000000010000000100000001000000010000000100000001
+        );
     }
 
     #[test]
@@ -377,7 +401,6 @@ mod tests {
 
         assert_eq!(pos.result(), Some(GameResult::Win(Player::Black)));
     }
-
 
     #[test]
     pub fn example_win_dia() {

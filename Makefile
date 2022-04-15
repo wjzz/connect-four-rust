@@ -10,6 +10,9 @@ play:
 solve:
 	@/usr/bin/time -f "%M kBs of ram" cargo run --release -q -- --solve
 
+evo:
+	@cargo run --release -q -- --evo
+
 test:
 	@python3 -m pytest -s tests.py
 

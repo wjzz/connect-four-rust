@@ -1,17 +1,19 @@
 use std::time::Instant;
 use thousands::Separable;
 
+use crate::position::Position;
 use crate::table::Table;
 use crate::types::*;
-use crate::position::Position;
 
 const VERBOSE_OUTPUT_SETTING: Option<&'static str> = option_env!("VERBOSE_OUTPUT");
 
 lazy_static! {
-    static ref VERBOSE_OUTPUT: bool = VERBOSE_OUTPUT_SETTING.map(|s| s.parse().unwrap()).unwrap_or(true);
+    static ref VERBOSE_OUTPUT: bool = VERBOSE_OUTPUT_SETTING
+        .map(|s| s.parse().unwrap())
+        .unwrap_or(true);
 }
 
-static mut NODE_COUNT: usize = 0;
+pub static mut NODE_COUNT: usize = 0;
 static mut CUTOFF_NODES: usize = 0;
 static mut PRE_CUTOFF_NODES: usize = 0;
 
@@ -28,17 +30,18 @@ impl GameResult {
     pub fn to_eval(self, to_play: Player) -> usize {
         match self {
             GameResult::Draw => return DRAW,
-            GameResult::Win(player) =>
+            GameResult::Win(player) => {
                 if player == to_play {
                     return WIN;
                 } else {
                     return LOSS;
                 }
+            }
         }
     }
 }
 
-pub fn solve_game<P:Position>() {
+pub fn solve_game<P: Position>() {
     unsafe {
         let depth = SIZE + 1;
 
@@ -55,7 +58,9 @@ pub fn solve_game<P:Position>() {
             0 => -10, // white win
             1 => 0,   // draw
             2 => 10,  // black win
-            _ => { panic!("wrong result"); }
+            _ => {
+                panic!("wrong result");
+            }
         };
 
         let ordering_factor = 100 * CUTOFF_NODES / PRE_CUTOFF_NODES;
@@ -72,7 +77,10 @@ pub fn solve_game<P:Position>() {
                 nps.separate_with_commas(),
             );
         } else {
-            println!("result,{},{},{},{},{}", ROWS, COLS, result, NODE_COUNT, elapsed_millisecs);
+            println!(
+                "result,{},{},{},{},{}",
+                ROWS, COLS, result, NODE_COUNT, elapsed_millisecs
+            );
         }
     }
 }
@@ -87,7 +95,7 @@ pub fn solve_top<P: Position>(pos: &mut P, depth: usize) -> usize {
     return result;
 }
 
-fn lookup_table<P:Position>(pos: &mut P, hashmap: &mut Table, depth: usize) -> Option<usize> {
+fn lookup_table<P: Position>(pos: &mut P, hashmap: &mut Table, depth: usize) -> Option<usize> {
     match hashmap.get(pos.hash()) {
         Some(result) => Some(result),
         None =>
@@ -102,7 +110,13 @@ fn lookup_table<P:Position>(pos: &mut P, hashmap: &mut Table, depth: usize) -> O
     }
 }
 
-fn solve_iter<P: Position>(pos: &mut P, hashmap: &mut Table, depth: usize, mut alpha: usize, mut beta: usize) -> usize {
+fn solve_iter<P: Position>(
+    pos: &mut P,
+    hashmap: &mut Table,
+    depth: usize,
+    mut alpha: usize,
+    mut beta: usize,
+) -> usize {
     unsafe {
         NODE_COUNT += 1;
 
@@ -135,7 +149,7 @@ fn solve_iter<P: Position>(pos: &mut P, hashmap: &mut Table, depth: usize, mut a
                 nodes_here += 1;
 
                 pos.make_move(mv);
-                let eval = 2 - solve_iter(pos, hashmap, depth-1, 2-beta, 2-alpha);
+                let eval = 2 - solve_iter(pos, hashmap, depth - 1, 2 - beta, 2 - alpha);
                 pos.unmake_move(mv);
 
                 if eval > alpha {

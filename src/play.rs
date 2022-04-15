@@ -17,11 +17,7 @@ fn get_move(pos: &ArrayPosition, ai: &AI) -> Move {
 
         let mv = ai.bestmove(pos);
         let elapsed_secs = now.elapsed().as_secs() as usize;
-        println!(
-            "played move {} after {} seconds",
-            mv,
-            elapsed_secs
-        );
+        println!("played move {} after {} seconds", mv, elapsed_secs);
         return mv;
     }
 }

@@ -1,8 +1,7 @@
 use rand::prelude::*;
 
-use crate::types::*;
 use crate::board::ArrayPosition;
-
+use crate::types::*;
 
 impl ArrayPosition {
     pub fn bestmove_minmax(self: &Self, depth: usize) -> Move {

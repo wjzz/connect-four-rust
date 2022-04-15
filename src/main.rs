@@ -7,18 +7,19 @@ extern crate lazy_static;
 mod bestmove;
 mod bitboard;
 mod board;
+mod evolution;
 mod perft;
 mod play;
+mod position;
 mod rollouts;
 mod solve;
-mod position;
 mod table;
 mod types;
 mod util;
 
-use util::*;
 use bitboard::BitPosition;
 use board::ArrayPosition;
+use util::*;
 
 const USAGE: &'static str = "\n
 --perft N   <N = max depth>
@@ -59,12 +60,15 @@ fn main() {
         "--play" => {
             play::play();
         }
+        "--evo" => {
+            evolution::evolution();
+        }
         "--solve" => {
-            // println!("ArrayPosition");
-            // solve::solve_game::<ArrayPosition>();
+            println!("ArrayPosition");
+            solve::solve_game::<ArrayPosition>();
 
-            println!("BitPosition");
-            solve::solve_game::<BitPosition>();
+            // println!("BitPosition");
+            // solve::solve_game::<BitPosition>();
         }
         _ => {
             show_usage_and_exit();

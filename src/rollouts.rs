@@ -2,8 +2,8 @@ use rand::prelude::*;
 use std::time::Instant;
 use thousands::Separable;
 
-use crate::types::*;
 use crate::board::ArrayPosition;
+use crate::types::*;
 
 fn rollout_game(rng: &mut ThreadRng, v: &mut Vec<Move>) -> GameResult {
     let mut pos = ArrayPosition::new();
@@ -41,8 +41,8 @@ pub fn rollout_games_shuffle(retries: usize) {
     let mut rng = thread_rng();
 
     let mut moves = vec![];
-    for _ in 0 .. ROWS {
-        for i in 0 .. COLS {
+    for _ in 0..ROWS {
+        for i in 0..COLS {
             moves.push(i);
         }
     }
@@ -106,7 +106,12 @@ fn simulate_game_with_move<P: Position>(pos: &P, mv: Move, rng: &mut ThreadRng) 
     }
 }
 
-pub fn get_black_win_count<P: Position>(pos: &P, mv: Move, rng: &mut ThreadRng, tries: usize) -> i32 {
+pub fn get_black_win_count<P: Position>(
+    pos: &P,
+    mv: Move,
+    rng: &mut ThreadRng,
+    tries: usize,
+) -> i32 {
     let mut black = 0;
 
     for _i in 0..tries {
