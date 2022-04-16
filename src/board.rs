@@ -16,7 +16,18 @@ pub const PATTERNS: [usize; 65] = [
     73, 74, 98, 138, 137, 69, 33, 161, 136, 66, 68, 17, 81, 146, 145, 133, 130, 129, 65,
 ];
 
-pub static mut PATTERN_WEIGHTS: [i32; PATTERN_NUM] = [0; PATTERN_NUM];
+pub static mut PATTERN_WEIGHTS: [i32; PATTERN_NUM] =
+// 6x5 best answer
+// [
+//     25, 87, 63, 98, 80, 212, 5, 1247, 91, 990, 31, 252, 2707, 2695, 357, 1481, 53, 199, 669, -9,
+//     16, 232, -94, -61, 14, 68, -181, -964, -279, -172, 3, 331, -70, -171, 1403, -562, -12, 352,
+//     -333, -310, 1069, 1594, 32, -313, -137, -107, -69, -264, 102, 82, 400, 3779, -41, -369, 666,
+//     262, 537, 526, 4471, -448, 93, 302, 115, 82, 817,
+// ];
+
+// 5x6 best answer
+[25, 115, 213, 142, 80, 212, 5, 1300, 98, 1343, 203, 49, 5420, 5471, 801, 2120, 182, -42, 1562, 9, 16, 232, 26, 132, -146, 68, 86, -146, -350, 82, -50, 177, 21, 78, 21, -386, 185, 1313, 301, 2, 1606, 3195, -493, -312, 58, 151, -69, -246, -43, 2000, 94, 3972, 71, -512, 800, 23, 1302, 1404, 6456, 205, 512, 521, 879, 151, 1070];
+
 
 const INDEXES_NUM: usize = 169;
 
@@ -33,7 +44,48 @@ const INDEXES: [usize; INDEXES_NUM] = [
     1000, 1000, 1000, 40,
 ];
 
-pub fn initialize_patterns() {}
+fn piece_to_string(piece: usize) -> String {
+    String::from(if piece == 0 {
+        "."
+    } else if piece == 1 {
+        "x"
+    } else {
+        "o"
+    })
+}
+
+fn decode_pattern(mut pattern: usize) -> String {
+    // let pattern = a + (b << 2) + (c << 4) + (d << 6);
+    let a = pattern % 4;
+    pattern >>= 2;
+    let b = pattern % 4;
+    pattern >>= 2;
+    let c = pattern % 4;
+    pattern >>= 2;
+    let d = pattern % 4;
+    assert!(a <= 2);
+    assert!(b <= 2);
+    assert!(c <= 2);
+    assert!(d <= 2);
+    format!("{}{}{}{}", piece_to_string(a),piece_to_string(b),piece_to_string(c),piece_to_string(d))
+}
+
+fn initialize_patterns() {
+
+    let mut v = vec![];
+    for (i, &index) in INDEXES.iter().enumerate() {
+        unsafe {
+            if index != 1000 {
+                v.push((PATTERN_WEIGHTS[index], i));
+            }
+        }
+    }
+    v.sort();
+    for (w, p) in v {
+        let pattern = decode_pattern(p);
+        println!("{} -> {}", pattern, w);
+    }
+}
 
 // static mut LINES: Vec<Vec<usize>> = vec![];
 
@@ -301,14 +353,20 @@ fn is_win_fast__(board: Board, last_col: Move, last_row: usize) -> bool {
 fn swap_color(a: usize) -> usize {
     if a == 1 {
         2
-    } else if a == 2{
+    } else if a == 2 {
         1
     } else {
         0
     }
 }
 
-fn get_line_fitness_evo(player: Player, mut a: usize, mut b: usize, mut c: usize, mut d: usize) -> i32 {
+fn get_line_fitness_evo(
+    player: Player,
+    mut a: usize,
+    mut b: usize,
+    mut c: usize,
+    mut d: usize,
+) -> i32 {
     if player == Player::White {
         a = swap_color(a);
         b = swap_color(b);

@@ -1,12 +1,16 @@
 // use std::time::Instant;
-use thousands::Separable;
 use rand::prelude::*;
+use thousands::Separable;
 
 use crate::board::{ArrayPosition, PATTERN_NUM, PATTERN_WEIGHTS};
 use crate::solve::{solve_top, NODE_COUNT};
 use crate::types::*;
 
-struct Vector { vec: Vec<i32>, fitness: usize }
+#[derive(Clone)]
+struct Vector {
+    vec: Vec<i32>,
+    fitness: usize,
+}
 
 impl Vector {
     pub fn new() -> Self {
@@ -19,8 +23,18 @@ impl Vector {
         let mut vec = vec![];
         let mut rng = rand::thread_rng();
         for _ in 0..PATTERN_NUM {
-            let value: i32 = rng.gen_range(0 .. 100_000);
+            let value: i32 = rng.gen_range(0..100);
             vec.push(value);
+        }
+        let fitness = 0;
+        Vector { vec, fitness }
+    }
+
+
+    fn from_weights(weights: [i32; PATTERN_NUM]) -> Self {
+        let mut vec = vec![];
+        for w in weights {
+            vec.push(w);
         }
         let fitness = 0;
         Vector { vec, fitness }
@@ -28,7 +42,7 @@ impl Vector {
 
     fn crossover(self: &Self, other: &Self) -> (Self, Self) {
         let mut rng = thread_rng();
-        let index = rng.gen_range(0..PATTERN_NUM-1);
+        let index = rng.gen_range(0..PATTERN_NUM - 1);
         println!("crossover point = {}", index);
         let mut v1 = Vector::new();
         let mut v2 = Vector::new();
@@ -75,23 +89,39 @@ impl Vector {
             self.fitness = NODE_COUNT;
         }
     }
-
-
 }
 
-const POPULATION_SIZE: usize = 25;
-const MUTATION_THRESHOLD: f64 = 0.1;
+const POPULATION_SIZE: usize = 20;
+const MUTATION_THRESHOLD: f64 = 0.2;
 
-struct Population { vectors: Vec<Vector>, generation: usize }
+struct Population {
+    vectors: Vec<Vector>,
+    generation: usize,
+    best: Option<Vector>,
+    best_fit: usize,
+}
 
 impl Population {
     pub fn new() -> Population {
         let mut vectors = vec![];
 
-        for _ in 0..POPULATION_SIZE {
+        vectors.push(Vector::from_weights([
+            25, 87, 63, 98, 80, 212, 5, 1247, 91, 990, 31, 252, 2707, 2695, 357, 1481, 53, 199, 669, -9,
+            16, 232, -94, -61, 14, 68, -181, -964, -279, -172, 3, 331, -70, -171, 1403, -562, -12, 352,
+            -333, -310, 1069, 1594, 32, -313, -137, -107, -69, -264, 102, 82, 400, 3779, -41, -369, 666,
+            262, 537, 526, 4471, -448, 93, 302, 115, 82, 817,
+        ]));
+
+        for _ in 0..POPULATION_SIZE-1 {
             vectors.push(Vector::rand());
         }
-        Population { vectors, generation: 0 }
+
+        Population {
+            vectors,
+            generation: 0,
+            best: None,
+            best_fit: 0,
+        }
     }
 
     pub fn evaluate_all(self: &mut Self) {
@@ -112,6 +142,13 @@ impl Population {
 
     pub fn shrink(self: &mut Self) {
         self.vectors.sort_by_key(|a| a.fitness);
+        if self.best.is_none() || self.vectors[0].fitness < self.best_fit {
+            self.best = Some(self.vectors[0].clone());
+            self.best_fit = self.vectors[0].fitness;
+
+            println!("---- NEW BEST = {}----", self.best_fit);
+            println!("{:?}", self.best.as_ref().unwrap().vec);
+        }
         while self.vectors.len() > POPULATION_SIZE {
             self.vectors.pop();
         }
@@ -142,8 +179,16 @@ impl Population {
         println!("parent 1 ==> {:10}", vaf.separate_with_commas());
         println!("parent 2 ==> {:10}", vbf.separate_with_commas());
         println!(" ---> ");
-        println!("v1 ==> {:10} {}", v1.fitness.separate_with_commas(), if v1.fitness < best { "SUPER"} else {""});
-        println!("v2 ==> {:10} {}", v2.fitness.separate_with_commas(), if v2.fitness < best { "SUPER"} else {""});
+        println!(
+            "v1 ==> {:10} {}",
+            v1.fitness.separate_with_commas(),
+            if v1.fitness < best { "SUPER" } else { "" }
+        );
+        println!(
+            "v2 ==> {:10} {}",
+            v2.fitness.separate_with_commas(),
+            if v2.fitness < best { "SUPER" } else { "" }
+        );
         if v1.fitness != vaf && v1.fitness != vbf {
             self.vectors.push(v1);
         }
