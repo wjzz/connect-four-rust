@@ -4,17 +4,31 @@
 
 # Hand crafted best
 
-rows = 4, cols = 4 ==>   0 | 00:00:00.595 |               12,199 nodes
-rows = 5, cols = 4 ==>   0 | 00:00:00.650 |               35,702 nodes
-rows = 4, cols = 5 ==>   0 | 00:00:00.630 |               55,529 nodes
-rows = 6, cols = 4 ==>   0 | 00:00:00.697 |              345,956 nodes
-rows = 4, cols = 6 ==> -10 | 00:00:00.728 |              713,340 nodes
 rows = 5, cols = 5 ==>   0 | 00:00:00.758 |              768,536 nodes
 rows = 6, cols = 5 ==>   0 | 00:00:01.198 |            3,402,602 nodes
 rows = 5, cols = 6 ==>   0 | 00:00:01.541 |            4,785,962 nodes
-rows = 6, cols = 6 ==> -10 | 00:00:29.701 |          137,755,314 nodes
-rows = 7, cols = 6 ==>  10 | 00:02:45.308 |          744,221,290 nodes
-rows = 6, cols = 7 ==>  10 | 00:06:01.058 |        1,602,535,755 nodes
+
+# EVO
+
+rows = 5, cols = 5 ==>   0 | 00:00:00.773 |              446,984 nodes
+rows = 6, cols = 5 ==>   0 | 00:00:01.122 |            1,908,904 nodes
+rows = 5, cols = 6 ==>   0 | 00:00:05.359 |           18,477,204 nodes
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Best weights for 6x5
 

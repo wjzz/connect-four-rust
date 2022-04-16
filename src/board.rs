@@ -18,7 +18,7 @@ pub const PATTERNS: [usize; 65] = [
 
 pub static mut PATTERN_WEIGHTS: [i32; PATTERN_NUM] =
 // 5x6 best answer
-[25, 82, 63, 98, 93, 212, 5, 1247, 91, 990, 31, 252, 10_000, 10_000, 497, 3_000, 53, -660, 782, 45, 16, 86, -821, 20, 14, 68, -359, -1508, -279, -190, -256, 331, 313, -171, 1403, -1121, -12, 352, -331, -912, 3_000, 3_000, 32, -313, -137, 245, -446, -528, 411, 3_000, 381, 10_000, -205, -775, 855, -123, 537, 526, 10_000, -289, 93, 943, 115, 82, 685];
+[25, 82, 63, 100, 93, 212, 5, 1247, 91, 990, 31, 252, 10_000, 10_000, 497, 3_000, 53, -660, 782, 45, 16, 86, -821, 20, 14, 100, -359, -1508, -279, -190, -256, 331, 313, -171, 1403, -1121, -12, 352, -331, -912, 3_000, 3_000, 32, -313, -137, 245, -446, -528, 411, 3_000, 381, 10_000, -205, -775, 855, -123, 537, 526, 10_000, -289, 93, 943, 115, 82, 685];
 
 
 const INDEXES_NUM: usize = 169;
@@ -144,12 +144,13 @@ impl Position for ArrayPosition {
         let index = rowcol2index(self.counts[mv], mv);
         let mut count = 0;
         let pp = Piece::from_player(self.to_play);
+        let opp = Piece::from_player(self.to_play.other());
         unsafe {
             for line in &LINES_BY_INDEX[index] {
                 let brd = self.board;
-                count += get_line_fitness_evo(
-                    self.to_play,
-                    // pp as usize,
+                count += get_line_fitness(
+                    // self.to_play,
+                    pp as usize,
                     brd[line[0]] as usize,
                     brd[line[1]] as usize,
                     brd[line[2]] as usize,
@@ -391,10 +392,10 @@ fn get_line_fitness(pp: usize, a: usize, b: usize, c: usize, d: usize) -> i32 {
     } else if line_count == 2 {
         return 100;
     } else {
-        return line_count.max(0);
+        return 0;
+        // return (line_count - opp_line_count).max(0);
     }
 }
-
 fn is_win(board: Board, player: Player) -> bool {
     let pp = Piece::from_player(player);
 
