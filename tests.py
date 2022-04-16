@@ -67,17 +67,17 @@ def test_connect_four(rows, cols, expected, nodes):
 
 if __name__ == "__main__":
     SIZES = [
-        (4,4),
-        (5,4),
-        (4,5),
-        (6,4),
-        (4,6),
+        # (4,4),
+        # (5,4),
+        # (4,5),
+        # (6,4),
+        # (4,6),
         (5,5),
         (6,5),
         (5,6),
-        (6,6),
-        (6,7),
-        (7,6),
+        # (6,6),
+        # (6,7),
+        # (7,6),
     ]
     for (rows, cols) in SIZES:
         run_result = run_rust_prog(rows, cols)
