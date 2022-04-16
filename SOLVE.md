@@ -72,3 +72,13 @@
 | 7x4 | draw | 1,005,078 | 8.5s | alpha-beta w/ move ordering & hashmap (32gb)
 
 | 8x4 | draw |  6,848,615 | 10s | alpha-beta w/ move ordering & hashmap (32gb)
+
+# Final results
+
+ArrayPosition
+6 x 7 | result =     10 | nodes = 1,861,821,396 | [elapsed: 9m 53s] | ordering: 90% | [speed: 3,139K nps]
+
+BitPosition
+6 x 7 | result =     10 | nodes = 1,602,535,755 | [elapsed: 5m 57s] | ordering: 90% | [speed: 4,491K nps]
+
+1575416 kBs of ram

@@ -1,6 +1,14 @@
 # Connect Four in Rust
 
-An implementation of the Connect Four game in Rust. The main feature is a solver of the using:
+An implementation of the Connect Four game in Rust.
+
+## Goal
+
+The goal of the project was to solve the game with 6 rows and 7 columns. The final algorithm is able to do it in 6 minutes (bitboards) or ~10 minutes (array).
+
+## Remarks
+
+The main feature is a solver of the using:
 - alpha-beta negamax
 - a transposition table (with a fixed size, as opposed to std lib collections)
 - a nice move ordering heuristing
