@@ -67,8 +67,8 @@ fn main() {
             println!("ArrayPosition");
             solve::solve_game::<ArrayPosition>();
 
-            // println!("BitPosition");
-            // solve::solve_game::<BitPosition>();
+            println!("BitPosition");
+            solve::solve_game::<BitPosition>();
         }
         _ => {
             show_usage_and_exit();

@@ -62,25 +62,6 @@ fn decode_pattern(mut pattern: usize) -> String {
     format!("{}{}{}{}", piece_to_string(a),piece_to_string(b),piece_to_string(c),piece_to_string(d))
 }
 
-fn initialize_patterns() {
-
-    let mut v = vec![];
-    for (i, &index) in INDEXES.iter().enumerate() {
-        unsafe {
-            if index != 1000 {
-                v.push((PATTERN_WEIGHTS[index], i));
-            }
-        }
-    }
-    v.sort();
-    for (w, p) in v {
-        let pattern = decode_pattern(p);
-        println!("{} -> {}", pattern, w);
-    }
-}
-
-// static mut LINES: Vec<Vec<usize>> = vec![];
-
 pub struct ArrayPosition {
     pub board: Board,
     pub counts: Counts,
@@ -547,7 +528,6 @@ pub fn initialize() {
     initialize_lines();
     initialize_lines_by_index();
     initialize_hashes();
-    initialize_patterns();
 }
 
 #[cfg(test)]
