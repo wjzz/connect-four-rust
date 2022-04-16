@@ -24,14 +24,9 @@ static mut LINES_BY_INDEX: Vec<Vec<usize>> = vec![];
 // 00 07 14 21 28 34 41
 //       BOTTOM
 
-const COLS1: usize = COLS + 1;
-const COLS2: usize = COLS + 2;
-const COLSM1: usize = COLS - 1;
 const ROWS1: usize = ROWS + 1;
 const ROWS2: usize = ROWS + 2;
-const SIZE1: usize = COLS1 * ROWS;
 
-const COL1: usize = (1 << COLS1) - 1;
 const ROW1: usize = (1 << ROWS1) - 1;
 
 const ALL1: usize = !0;
@@ -47,28 +42,6 @@ fn check_win(bb: BitBoard) -> bool {
         || check_win_delta(bb, ROWS1)
         || check_win_delta(bb, ROWS2)
         || check_win_delta(bb, ROWS)
-}
-
-// fn count_twos_delta(bb: BitBoard, delta: usize) -> usize {
-//     let d = bb & (bb >> delta);
-//     d.count_ones() as usize
-// }
-
-// fn count_twos(bb: BitBoard) -> usize {
-//     count_twos_delta(bb, 1) + count_twos_delta(bb, ROWS1) + count_twos_delta(bb, ROWS2) + count_twos_delta(bb, ROWS)
-// }
-
-fn count_threes_delta(bb: BitBoard, delta: usize) -> usize {
-    let d = bb & (bb >> delta);
-    let d2 = d & (d >> delta);
-    d2.count_ones() as usize
-}
-
-fn count_threes(bb: BitBoard) -> usize {
-    count_threes_delta(bb, 1)
-        + count_threes_delta(bb, ROWS1)
-        + count_threes_delta(bb, ROWS2)
-        + count_threes_delta(bb, ROWS)
 }
 
 impl BitPosition {
@@ -241,35 +214,6 @@ impl Position for BitPosition {
         }
         return count;
     }
-
-    // fn get_lines_count(self: &Self, mv: Move) -> i32 {
-    //     let mut bb = self.bbs[self.move_count & 1];
-    //     bb |= 1 << self.counts[mv];
-
-    //     if check_win(bb) {
-    //         return 1_000_000;
-    //     }
-
-    //     // TODO: we can probably refactor the common part
-    //     // of counting twos and threes
-    //     let threes = count_threes(bb);
-    //     let count = 10_000 * threes;
-    //     count as i32
-    // }
-}
-
-pub fn print_mask(mask: usize) {
-    for row in (0..ROWS).rev() {
-        for col in 0..COLS {
-            let index = colrow2index(col, row);
-            if mask & (1 << index) != 0 {
-                print!("x ");
-            } else {
-                print!(". ");
-            }
-        }
-        println!();
-    }
 }
 
 pub fn initialize_lines() {
@@ -301,20 +245,6 @@ pub fn initialize_lines() {
             }
         }
     }
-
-    // unsafe {
-    //     for row in 0..ROWS {
-    //         for col in 0..COLS {
-    //             let base = colrow2index(col, row);
-    //             println!("(col={}, row={}) = {} ===> {}", col, row, base, LINES_BY_INDEX[base].len());
-
-    //             for mask in &LINES_BY_INDEX[base] {
-    //                 print_mask(*mask);
-    //                 println!();
-    //             }
-    //         }
-    //     }
-    // }
 }
 
 fn add_line(a: usize, b: usize, c: usize, d: usize) {
@@ -337,23 +267,6 @@ mod tests {
         assert_eq!(
             ALL1,
             0b1111111111111111111111111111111111111111111111111111111111111111
-        );
-    }
-
-    #[test]
-    fn test_column_of_ones() {
-        // println!("COL1 = {:b}", COL1);
-        assert_eq!(
-            COL1,
-            0b0000000000000000000000000000000000000000000000000000000011111111
-        );
-    }
-
-    #[test]
-    fn test_bottom() {
-        assert_eq!(
-            BOTTOM,
-            0b0000000100000001000000010000000100000001000000010000000100000001
         );
     }
 

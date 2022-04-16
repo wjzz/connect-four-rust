@@ -1,13 +1,44 @@
+# Connect Four in Rust
+
+An implementation of the Connect Four game in Rust. The main feature is a solver of the using:
+- alpha-beta negamax
+- a transposition table (with a fixed size, as opposed to std lib collections)
+- a nice move ordering heuristing
+- a fast bitboard implementation
+
+The transposition table and bitboard implementation are heavily based on
+https://github.com/tromp/fhourstones88
+
+There is a nice writeup here:
+https://github.com/denkspuren/BitboardC4/blob/master/BitboardDesign.md
+
+The hashtable size was taken from: https://planetmath.org/goodhashtableprimes
+
+I've tried to find a better move ordering heuristic by assigning weights to various patterns of 4-men lines by using a simple evolutionary algorithm, but the weights for smaller boards (5x5, 6x5, 5x6) would not work well for other sizes.
+
+## RUN TESTS
+
+```sh
+$ cargo test   # unit tests
+$ make test    # verify that solve returns correct answers
+```
+
 ## PERFT
 
 ```sh
 $ cargo run --release -q -- --perft 4
 ```
 
-## ROLLOUTS
-
-```sh
-cargo run --release -q -- --rollout 5000
+Example output (fast = transposition table, slow = naive):
+```
+Fast array
+nodes after 11 moves = 44,973,684 [elapsed: 40] [speed: 1,124M nps]
+Fast bitboard
+nodes after 11 moves = 44,973,684 [elapsed: 48] [speed: 936M nps]
+Slow array
+nodes after 11 moves = 44,973,684 [elapsed: 772] [speed: 58M nps]
+Slow bitboard
+nodes after 11 moves = 44,973,684 [elapsed: 466] [speed: 96M nps]
 ```
 
 ## BENCHMARKS

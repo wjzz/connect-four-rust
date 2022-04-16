@@ -141,7 +141,7 @@ fn solve_iter<P: Position>(
                 }
             }
             let mut moves = pos.moves();
-            order_moves(pos, &mut moves, depth);
+            order_moves(pos, &mut moves);
 
             let mut nodes_here = 0;
 
@@ -191,10 +191,10 @@ fn get_centralization_factor(mv: &Move) -> i32 {
     COLS as i32 - (CENTER_COL - mv).abs()
 }
 
-fn get_move_order<P: Position>(pos: &P, mv: &Move, depth: usize) -> i32 {
+fn get_move_order<P: Position>(pos: &P, mv: &Move) -> i32 {
     pos.get_lines_count(*mv) + 2 * get_centralization_factor(mv)
 }
 
-fn order_moves<P: Position>(pos: &P, moves: &mut Vec<Move>, depth: usize) {
-    moves.sort_by_cached_key(|mv| -get_move_order(pos, mv, depth));
+fn order_moves<P: Position>(pos: &P, moves: &mut Vec<Move>) {
+    moves.sort_by_cached_key(|mv| -get_move_order(pos, mv));
 }

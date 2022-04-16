@@ -1,6 +1,6 @@
 pub use crate::position::Position;
 
-pub const ROWS: usize = 5;
+pub const ROWS: usize = 6;
 pub const COLS: usize = 5;
 pub const SIZE: usize = ROWS * COLS;
 
@@ -53,10 +53,6 @@ impl Piece {
 
 // A move is the column number
 pub type Move = usize;
-
-pub fn parse_move(s: String) -> Move {
-    return s.parse::<usize>().unwrap() - 1;
-}
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum GameResult {

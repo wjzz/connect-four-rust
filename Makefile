@@ -1,21 +1,13 @@
-benchmark:
-	@cargo run --release -q -- --rollout 1000000
-
 perft:
 	@cargo run --release -q -- --perft 11
-
-play:
-	@cargo run --release -q -- --play
-
-solve:
-	@/usr/bin/time -f "%M kBs of ram" cargo run --release -q -- --solve
-
-evo:
-	@cargo run --release -q -- --evo
 
 test:
 	@python3 -m pytest -s tests.py
 
+solve:
+	@/usr/bin/time -f "%M kBs of ram" cargo run --release -q -- --solve
+
+# same as solve, but with output that is easier to parse
 quiet:
 	@VERBOSE_OUTPUT=false cargo run --release -q -- --solve
 

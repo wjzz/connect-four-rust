@@ -8,60 +8,6 @@ pub static mut LINES: Vec<Vec<usize>> = vec![];
 pub static mut LINES_BY_INDEX: Vec<Vec<Vec<usize>>> = vec![];
 pub static mut ZOBRIST: [[usize; SIZE]; 2] = [[0; SIZE]; 2];
 
-pub const PATTERN_NUM: usize = 65;
-
-pub const PATTERNS: [usize; 65] = [
-    0, 16, 4, 1, 8, 9, 2, 20, 32, 5, 41, 10, 84, 21, 34, 42, 40, 148, 37, 25, 6, 160, 24, 144, 36,
-    64, 26, 164, 72, 18, 152, 22, 96, 88, 38, 100, 128, 80, 82, 132, 168, 162, 70, 104, 97, 134,
-    73, 74, 98, 138, 137, 69, 33, 161, 136, 66, 68, 17, 81, 146, 145, 133, 130, 129, 65,
-];
-
-pub static mut PATTERN_WEIGHTS: [i32; PATTERN_NUM] =
-// 5x6 best answer
-[25, 82, 63, 100, 93, 212, 5, 1247, 91, 990, 31, 252, 10_000, 10_000, 497, 3_000, 53, -660, 782, 45, 16, 86, -821, 20, 14, 100, -359, -1508, -279, -190, -256, 331, 313, -171, 1403, -1121, -12, 352, -331, -912, 3_000, 3_000, 32, -313, -137, 245, -446, -528, 411, 3_000, 381, 10_000, -205, -775, 855, -123, 537, 526, 10_000, -289, 93, 943, 115, 82, 685];
-
-
-const INDEXES_NUM: usize = 169;
-
-const INDEXES: [usize; INDEXES_NUM] = [
-    0, 3, 6, 1000, 2, 9, 20, 1000, 4, 5, 11, 1000, 1000, 1000, 1000, 1000, 1, 57, 29, 1000, 7, 13,
-    31, 1000, 22, 19, 26, 1000, 1000, 1000, 1000, 1000, 8, 52, 14, 1000, 24, 18, 34, 1000, 16, 10,
-    15, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,
-    1000, 1000, 1000, 1000, 1000, 1000, 25, 64, 55, 1000, 56, 51, 42, 1000, 28, 46, 47, 1000, 1000,
-    1000, 1000, 1000, 37, 58, 38, 1000, 12, 1000, 1000, 1000, 33, 1000, 1000, 1000, 1000, 1000,
-    1000, 1000, 32, 44, 48, 1000, 35, 1000, 1000, 1000, 43, 1000, 1000, 1000, 1000, 1000, 1000,
-    1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,
-    1000, 36, 63, 62, 1000, 39, 61, 45, 1000, 54, 50, 49, 1000, 1000, 1000, 1000, 1000, 23, 60, 59,
-    1000, 17, 1000, 1000, 1000, 30, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 21, 53, 41, 1000, 27,
-    1000, 1000, 1000, 40,
-];
-
-fn piece_to_string(piece: usize) -> String {
-    String::from(if piece == 0 {
-        "."
-    } else if piece == 1 {
-        "x"
-    } else {
-        "o"
-    })
-}
-
-fn decode_pattern(mut pattern: usize) -> String {
-    // let pattern = a + (b << 2) + (c << 4) + (d << 6);
-    let a = pattern % 4;
-    pattern >>= 2;
-    let b = pattern % 4;
-    pattern >>= 2;
-    let c = pattern % 4;
-    pattern >>= 2;
-    let d = pattern % 4;
-    assert!(a <= 2);
-    assert!(b <= 2);
-    assert!(c <= 2);
-    assert!(d <= 2);
-    format!("{}{}{}{}", piece_to_string(a),piece_to_string(b),piece_to_string(c),piece_to_string(d))
-}
-
 pub struct ArrayPosition {
     pub board: Board,
     pub counts: Counts,
@@ -125,17 +71,13 @@ impl Position for ArrayPosition {
         let index = rowcol2index(self.counts[mv], mv);
         let mut count = 0;
         let pp = Piece::from_player(self.to_play);
-        let opp = Piece::from_player(self.to_play.other());
         unsafe {
             for line in &LINES_BY_INDEX[index] {
                 let brd = self.board;
                 count += get_line_fitness(
-                    // self.to_play,
-                    pp as usize,
-                    brd[line[0]] as usize,
-                    brd[line[1]] as usize,
-                    brd[line[2]] as usize,
-                    brd[line[3]] as usize,
+                    pp,
+                    brd,
+                    line
                 );
             }
         }
@@ -166,7 +108,6 @@ impl Position for ArrayPosition {
         s += "\n";
 
         for row in (0..ROWS).rev() {
-            let row_num = ROWS - row;
             s += &format!(" ");
             for col in 0..COLS {
                 let base = rowcol2index(row, col);
@@ -249,18 +190,6 @@ impl Position for ArrayPosition {
         }
     }
 
-    // fn fast_result(self: &Self, mv: Move) -> Option<GameResult> {
-    //     if self.move_count < 7 {
-    //         None
-    //     } else if is_win_fast(self.board, mv, self.counts[mv]-1) {
-    //         Some(GameResult::Win(self.to_play.other()))
-    //     } else if self.move_count == SIZE {
-    //         Some(GameResult::Draw)
-    //     } else {
-    //         None
-    //     }
-    // }
-
     fn legal_move_count(self: &Self) -> usize {
         let mut result = 0;
 
@@ -274,93 +203,12 @@ impl Position for ArrayPosition {
     }
 }
 
-fn has_a_winning_line(
-    board: &Board,
-    pp: Piece,
-    index: usize,
-    d: usize,
-    start: usize,
-    end: usize,
-) -> bool {
-    let mut curr = start;
-    let mut count = 0;
-    while curr <= end {
-        if board[curr] == pp {
-            count += 1;
-            if count == 4 {
-                return true;
-            }
-        } else {
-            count = 0;
-        }
-        curr -= d;
-    }
-    false
-}
-
-fn is_win_fast__(board: Board, last_col: Move, last_row: usize) -> bool {
-    let index = rowcol2index(last_row, last_col);
-    let pp = board[index];
-
-    // - rows
-    let d = 1;
-    let start = 0.max(last_col - 3);
-    let end = COLS.min(last_col + 3);
-    if has_a_winning_line(&board, pp, index, d, start, end) {
-        return true;
-    }
-
-    // | last col
-    if last_row >= 3 {
-        let d = COLS;
-        if pp == board[index - d] && pp == board[index - 2 * d] && pp == board[index - 3 * d] {
-            return true;
-        }
-    }
-
-    // / diagonal
-
-    // \ diagonal
-    false
-}
-
-fn swap_color(a: usize) -> usize {
-    if a == 1 {
-        2
-    } else if a == 2 {
-        1
-    } else {
-        0
-    }
-}
-
-fn get_line_fitness_evo(
-    player: Player,
-    mut a: usize,
-    mut b: usize,
-    mut c: usize,
-    mut d: usize,
-) -> i32 {
-    if player == Player::White {
-        a = swap_color(a);
-        b = swap_color(b);
-        c = swap_color(c);
-        d = swap_color(d);
-    }
-    let pattern = a + (b << 2) + (c << 4) + (d << 6);
-    let index = INDEXES[pattern];
-    unsafe {
-        return PATTERN_WEIGHTS[index];
-    }
-}
-
-fn get_line_fitness(pp: usize, a: usize, b: usize, c: usize, d: usize) -> i32 {
+fn get_line_fitness(pp: Piece, brd: Board, line: &Vec<usize>) -> i32 {
     let mut line_count = 0;
-    let brd = vec![a, b, c, d];
-    for i in 0..4 {
+    for &i in line {
         if brd[i] == pp {
             line_count += 1;
-        } else if brd[i] != 0 {
+        } else if brd[i] != Piece::Empty {
             line_count -= 1;
         }
     }
@@ -374,7 +222,6 @@ fn get_line_fitness(pp: usize, a: usize, b: usize, c: usize, d: usize) -> i32 {
         return 100;
     } else {
         return 0;
-        // return (line_count - opp_line_count).max(0);
     }
 }
 fn is_win(board: Board, player: Player) -> bool {
@@ -476,41 +323,6 @@ fn initialize_lines_by_index() {
             }
         }
     }
-}
-
-fn is_win_lines(board: Board, player: Player) -> bool {
-    unsafe {
-        let pp = Piece::from_player(player);
-
-        for line in &LINES {
-            if board[line[0]] == pp
-                && board[line[1]] == pp
-                && board[line[2]] == pp
-                && board[line[3]] == pp
-            {
-                return true;
-            }
-        }
-    }
-    false
-}
-
-fn is_win_fast(board: Board, last_col: Move, last_row: usize) -> bool {
-    let index = rowcol2index(last_row, last_col);
-    let pp = board[index];
-
-    unsafe {
-        for line in &LINES_BY_INDEX[index] {
-            if board[line[0]] == pp
-                && board[line[1]] == pp
-                && board[line[2]] == pp
-                && board[line[3]] == pp
-            {
-                return true;
-            }
-        }
-    }
-    false
 }
 
 fn initialize_hashes() {
